@@ -1,9 +1,4 @@
 ---
 {,"permalink":"/c/",}
 ---
-<script>
-  
-const lego = 42;
-console.info( lego );
-  
-</script>
+<script src="https://raw.githubusercontent.com/qqvvv/o/refs/heads/a/src/site/notes/9/j.js"></script>
