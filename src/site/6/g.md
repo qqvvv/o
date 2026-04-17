@@ -1,5 +1,5 @@
 ---
 {,"permalink":"/c/",}
 ---
-<script src="Comments.njk"></script>
+<script src="omments.njk"></script>
 changelog has moved! You can find the latest updates and devlog
