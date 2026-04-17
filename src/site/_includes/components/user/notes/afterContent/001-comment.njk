@@ -1,8 +1,12 @@
-<div id="tcomment"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twikoo/1.6.44/twikoo.min.js"></script>
-<script>
-twikoo.init({
-  envId: 'https://ttq.netlify.app/.netlify/functions/twikoo',
-  el: '#tcomment',
-})
-</script>
+{%- if series -%}
+{%- for handle, idx in series -%}
+{%- for note in collections.note -%}
+{%- if note.data.handle and note.data.handle == handle -%}
+<div class="callout" data-callout="info">
+    <div class="callout-title">{{ note.data.title or note.fileSlug }}</div>
+    {{ note.templateContent | hideDataview | link | taggify | safe}}
+</div>
+{%- endif -%}
+{%- endfor -%}
+{%- endfor -%}
+{%- endif -%}
