@@ -94,7 +94,7 @@ module.exports = async (data) => {
     noteIconsSettings,
     timestampSettings,
     baseTheme: process.env.BASE_THEME || "dark",
-    siteName: process.env.SITE_NAME_HEADER || "Digital Garden",
+    siteName: process.env.SITE_NAME_HEADER || "resolve Akashic",
     siteLogoPath: logoPath,
     mainLanguage: process.env.SITE_MAIN_LANGUAGE || "en",
     siteBaseUrl: baseUrl,

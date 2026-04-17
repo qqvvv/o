@@ -1,12 +1,15 @@
-{%- if series -%}
-{%- for handle, idx in series -%}
-{%- for note in collections.note -%}
-{%- if note.data.handle and note.data.handle == handle -%}
-<div class="callout" data-callout="info">
-    <div class="callout-title">{{ note.data.title or note.fileSlug }}</div>
-    {{ note.templateContent | hideDataview | link | taggify | safe}}
-</div>
-{%- endif -%}
-{%- endfor -%}
-{%- endfor -%}
-{%- endif -%}
+<script src="https://giscus.app/client.js"
+        data-repo="houbb/my-discussion"
+        data-repo-id="R_kgDOPLJ4lA"
+        data-category="General"
+        data-category-id="DIC_kwDOPLJ4lM4Cs15z"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="light"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+</script>
