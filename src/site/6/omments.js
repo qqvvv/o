@@ -17,7 +17,7 @@
         "display":{
           "position":"right",
           "width":480,
-          "height":640,
+          "height":960,
           "hOffset":0,
           "vOffset":0
         },
