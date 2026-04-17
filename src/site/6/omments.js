@@ -10,7 +10,7 @@
       "pluginRootPath":"live2dw/",
       "pluginJsPath":"lib/",
       "pluginModelPath":"assets/",
-      "tagMode":false,
+      "tagMode":true,
       "debug":true,
       "model":{
         "jsonPath":"https://unpkg.2333332.xyz/live2d-widget-model-mashiro-seifuku@1.0.1/assets/seifuku.model.json"},
@@ -21,9 +21,9 @@
           "hOffset":0,
           "vOffset":0
         },
-      "mobile":{"show":false},
+      "mobile":{"show":true},
       "react":{"opacity":0.8},
-      "log":false});
+      "log":true});
   } catch (error) {
     console.error(error);
   }
