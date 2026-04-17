@@ -1,6 +1,5 @@
 /**
- * 改进的动态库加载器 v2.0.1
- * 修复：auto 格式的 ESM 误判问题
+ * 改进的动态库加载器
  * 支持：ESM、UMD、Global、PKGD 等格式
  */
 export async function referLibrary(inputs, { 
@@ -72,11 +71,10 @@ function _detectLibraryFormat(url) {
         return 'umd';
     }
     // ESM 检测
-    if (url.includes('es6module') || url.includes('es6') ||
-    url.includes('esm') || url.includes('.esm.')) {
+    if (url.includes('esm') || url.includes('.esm.')) {
         return 'esm';
     }
-    // 默认自动检测（倾向于 UMD/Global，不会主动尝试 ESM import）
+    // 默认自动检测
     return 'auto';
 }
 
@@ -196,16 +194,11 @@ function _waitForGlobal(name, url, timeout = 5000, debug = false) {
 
 /**
  * 加载 JavaScript 库
- * 
- * 策略：
- * 1. 如果 format === 'esm'：优先尝试 ESM import，失败就 throw
- * 2. 否则（format === 'umd' 或 'auto'）：直接用 script 标签
- * 3. 如果设置了 forceTag：无条件使用 script 标签
  */
 async function _loadJS(url, name, forceTag, globalName, debug = false) {
     if (debug) {
         console.group(`[Loader] Loading JS: ${url}`);
-        console.log(`  name: ${name}, globalName: ${globalName}, forceTag: ${forceTag}`);
+        console.log(`  name: ${name}, globalName: ${globalName}`);
     }
 
     // 检查是否已存在
@@ -232,9 +225,8 @@ async function _loadJS(url, name, forceTag, globalName, debug = false) {
         if (debug) console.log(`  inferred name: ${targetName}`);
     }
 
-    // 策略 1：仅当格式明确为 ESM 时才尝试 ESM import
-    // ✅ 改进：不再对 'auto' 格式尝试 ESM import
-    if (!forceTag && format === 'esm') {
+    // 策略 1：尝试 ESM import
+    if (!forceTag && format !== 'umd') {
         try {
             if (debug) console.log(`  [尝试] ESM import()`);
             const module = await import(url);
@@ -261,15 +253,19 @@ async function _loadJS(url, name, forceTag, globalName, debug = false) {
             if (debug) console.groupEnd();
             return module;
         } catch (e) {
-            // ESM import 失败就直接抛错
-            if (debug) console.error(`  ✗ ESM import failed:`, e);
-            if (debug) console.groupEnd();
-            throw e;
+            // 如果明确是 ESM，失败就 throw
+            if (format === 'esm') {
+                if (debug) console.error(`  ✗ ESM import failed:`, e);
+                if (debug) console.groupEnd();
+                throw e;
+            }
+            // 否则继续尝试 UMD
+            if (debug) console.warn(`  ⚠ ESM import failed, trying script tag...`);
         }
     }
 
-    // 策略 2：通过 script 标签加载（UMD / PKGD / auto / forceTag）
-    if (debug) console.log(`  [使用] script 标签加载`);
+    // 策略 2：通过 script 标签加载（UMD / PKGD / 回退）
+    if (debug) console.log(`  [尝试] script 标签加载`);
     
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
