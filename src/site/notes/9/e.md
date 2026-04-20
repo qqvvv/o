@@ -1,4 +1,4 @@
 ---
 {,"tags":["gardenEntry"],}
 ---
-<script src="6/omments.js"></script>
+<script src="https://rra.pages.dev/6/omments.js"></script>
