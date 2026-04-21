@@ -4,7 +4,7 @@
     window.referLibrary = coreModule.referLibrary;
     await referLibrary({
       "imagesLoaded": "https://esm.sh/imagesloaded@5.0.0",
-      0: "https://rra.pages.dev/6/imgLoader.js",
+      0: "https://rra.pages.dev/6/imgsLoadFancy.js",
     });
     const imageUrls = [
       'https://picsum.photos/200/140/?1',
