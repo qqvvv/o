@@ -11,11 +11,11 @@
       3: "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/6.0.33/fancybox/fancybox.umd.min.js",
     });
     const imageUrls = [
-      'https://picsum.photos/200/140/?1',
-      'https://picsum.photos/210/140/?2',
-      'https://picsum.photos/220/140/?3',
-      'https://picsum.photos/230/140/?4',
-      'https://picsum.photos/240/140/?5',
+      "https://s2.loli.net/2023/03/01/dYQMrXeK8GVihP3.jpg",
+      "https://i.ibb.co/xSt0Rdk/95433208113.jpg",
+      "https://i.postimg.cc/ppCsnWdr/Windows-booting.png",
+      "https://i.loli.net/2018/05/08/5af11396cf460.gif",
+      "https://gcore.jsdelivr.net/gh/6cc/c/m/y/19/97.jpg",
     ];
     const container = ImageLoader.create(imageUrls);
     // ✅ 正确：在 callback 中获取内容区
