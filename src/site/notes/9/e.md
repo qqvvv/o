@@ -1,4 +1,4 @@
 ---
 {,"tags":["gardenEntry"],}
 ---
-<script src="6/omments.js"></script>
+<script src="6/live2d-widget.js"></script>
