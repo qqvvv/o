@@ -256,7 +256,7 @@ function createMenuItemsFromData(nodeArray, menuLevel) {
       }
       div.textContent = node.text;
       div.onclick = function() {
-        commandExecutor.execute(node.text);
+        CommandExecutor.execute(node.text);
         openMulti();
       };
       items.push(div);
