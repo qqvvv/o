@@ -334,20 +334,9 @@ function createMultiSelectUI(treeData) {
 }
 
 // 初始化应用
-export function initializeApp() {
-  document.addEventListener("DOMContentLoaded", () => {
-    createStyles();
+export function initializeApp( data ) {
 
-    // 数据定义
-    const data = `
-- 层一功能1
-- 层一折叠1
-  - 层二折叠1
-    - 层三功能1
-    - 层三功能2
-  - 层二功能1
-- 层一功能2 #?<comment= #YggdrAML
-    `;
+    createStyles();
 
     // 解析数据（使用 DataParser）
     const result = parse(data);
@@ -358,5 +347,5 @@ export function initializeApp() {
     const ui = createMultiSelectUI(result);
 
     document.body.appendChild(ui);
-  });
+
 }
