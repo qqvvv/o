@@ -1,5 +1,5 @@
 // menuUI.js
-import { parse } from 'dataParser.js';
+import { parse } from './dataParser.js';
 
 // 创建样式
 function createStyles() {
@@ -334,29 +334,16 @@ function createMultiSelectUI(treeData) {
 }
 
 // 初始化应用
-export function initializeApp() {
+export function initializeApp( data ) {
+  createStyles();
 
-    createStyles();
+  // 解析数据（使用 DataParser）
+  const result = parse(data);
 
-    // 数据定义
-    const data = `
-- 层一功能1
-- 层一折叠1
-  - 层二折叠1
-    - 层三功能1
-    - 层三功能2
-  - 层二功能1
-- 层一功能2 #?<comment= #YggdrAML
-    `;
+  console.log('解析结果:', JSON.stringify(result, null, 2));
 
-    // 解析数据（使用 DataParser）
-    const result = parse(data);
+  // 创建UI
+  const ui = createMultiSelectUI(result);
 
-    console.log('解析结果:', JSON.stringify(result, null, 2));
-
-    // 创建UI
-    const ui = createMultiSelectUI(result);
-
-    document.body.appendChild(ui);
-
+  document.body.appendChild(ui);
 }
