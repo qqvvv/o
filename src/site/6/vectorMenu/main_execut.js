@@ -1,6 +1,6 @@
 (async () => {
   const menu = "https://rra.pages.dev/6/vectorMenu/menuUI_esm.js";
-  const url = "https://rra.pages.dev/6/vectorMenu/commandExecutor.js";
+  const exec = "https://rra.pages.dev/6/vectorMenu/commandExecutor.js";
   try {
     const { initializeApp } = await import( menu );
     const data = `
@@ -13,9 +13,9 @@
 - 层一功能2 #?<comment= #YggdrAML
 `;
 
-    const { initializeApp } = await import( url );
+    const { initializeApp } = await import( exec );
     window.executor = executor;
-    initializeApp ( data, executor );
+    initializeApp ( data );
     // 创建命令执行器
     const executor = new CommandExecutor({ debug: true });
     executor.registerBatch({

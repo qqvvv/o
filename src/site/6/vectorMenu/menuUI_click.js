@@ -1,9 +1,6 @@
 // menuUI.js
 import { parse } from './dataParser.js';
-
-/**
- * import { CommandExecutor } from './commandExecutor.js';
- */
+import { CommandExecutor } from './commandExecutor.js';
 
 // 创建样式
 function createStyles() {
@@ -260,7 +257,7 @@ function createMenuItemsFromData(nodeArray, menuLevel) {
       }
       div.textContent = node.text;
       div.onclick = function() {
-        commandExecutor.execute(node.text);
+        CommandExecutor.execute(node.text);
         openMulti();
       };
       items.push(div);
@@ -341,7 +338,7 @@ function createMultiSelectUI(treeData) {
 }
 
 // 初始化应用
-export function initializeApp( data, commandExecutor ) {
+export function initializeApp( data ) {
   createStyles();
 
   // 解析数据（使用 DataParser）
