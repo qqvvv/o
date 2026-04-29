@@ -288,7 +288,7 @@ function createMenusFromData(dataArray, selectWrapper, menuLevel = 0) {
       menu.appendChild(titleDiv);
 
       // 添加子菜单项
-      const items = createMenuItemsFromData(node.children, menuLevel + 1);
+      const items = createMenuItemsFromData(node.children, menuLevel + 1, commandExecutor);
       items.forEach(item => menu.appendChild(item));
 
       // 添加返回按钮
@@ -330,7 +330,7 @@ function createMultiSelectUI(treeData, commandExecutor) {
   rootMenu.id = "menu-0";
 
   // 添加根菜单项
-  const rootItems = createMenuItemsFromData(treeData, 0);
+  const rootItems = createMenuItemsFromData(treeData, 0, commandExecutor);
   rootItems.forEach(item => rootMenu.appendChild(item));
 
   selectWrapper.appendChild(rootMenu);
@@ -353,7 +353,7 @@ export function initializeApp( data, commandExecutor ) {
   console.log('解析结果:', result);
 
   // 创建UI
-  const ui = createMultiSelectUI(result);
+  const ui = createMultiSelectUI(result, commandExecutor);
 
   document.body.appendChild(ui);
 }
