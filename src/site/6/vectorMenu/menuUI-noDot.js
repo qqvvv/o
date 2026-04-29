@@ -1,5 +1,5 @@
 // menuUI.js
-import { parse } from './dataParser.js';
+import { parse } from '/dataParser.js';
 
 // 创建样式
 function createStyles() {
@@ -335,7 +335,7 @@ function createMultiSelectUI(treeData) {
 
 // 初始化应用
 export function initializeApp() {
-  document.addEventListener("DOMContentLoaded", () => {
+
     createStyles();
 
     // 数据定义
@@ -358,5 +358,5 @@ export function initializeApp() {
     const ui = createMultiSelectUI(result);
 
     document.body.appendChild(ui);
-  });
+
 }
