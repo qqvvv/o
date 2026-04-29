@@ -1,5 +1,5 @@
 // menuUI.js
-import { parse } from 'https://rra.pages.dev/6/vectorMenu/dataParser.js';
+import { parse } from './dataParser.js';
 
 // 创建样式
 function createStyles() {
@@ -255,7 +255,10 @@ function createMenuItemsFromData(nodeArray, menuLevel) {
         div.classList.add("bottomBorder");
       }
       div.textContent = node.text;
-      div.onclick = openMulti;
+      div.onclick = function() {
+        commandExecutor.execute(node.text);
+        openMulti();
+      };
       items.push(div);
     }
   });
@@ -335,17 +338,15 @@ function createMultiSelectUI(treeData) {
 
 // 初始化应用
 export function initializeApp( data ) {
+  createStyles();
 
-    createStyles();
+  // 解析数据（使用 DataParser）
+  const result = parse(data);
 
-    // 解析数据（使用 DataParser）
-    const result = parse(data);
+  console.log('解析结果:', result);
 
-    console.log('解析结果:', JSON.stringify(result, null, 2));
+  // 创建UI
+  const ui = createMultiSelectUI(result);
 
-    // 创建UI
-    const ui = createMultiSelectUI(result);
-
-    document.body.appendChild(ui);
-
+  document.body.appendChild(ui);
 }
