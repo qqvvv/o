@@ -274,7 +274,7 @@ function createMenuItemsFromData(nodeArray, menuLevel, commandExecutor) {
 }
 
 // 递归创建菜单DOM
-function createMenusFromData(dataArray, selectWrapper, menuLevel = 0, commandExecutor) {
+function createMenusFromData(dataArray, selectWrapper, menuLevel = 0) {
   dataArray.forEach((node) => {
     if (isNode(node) && node.children && node.children.length > 0) {
       const menu = document.createElement("div");
@@ -308,7 +308,7 @@ function createMenusFromData(dataArray, selectWrapper, menuLevel = 0, commandExe
 }
 
 // 创建多选UI
-function createMultiSelectUI(treeData) {
+function createMultiSelectUI(treeData, commandExecutor) {
   // 创建主容器
   const flexDiv = document.createElement("div");
   flexDiv.className = "flexDiv";
