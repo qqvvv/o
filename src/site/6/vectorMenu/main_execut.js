@@ -14,10 +14,9 @@
 `;
 
     const { CommandExecutor } = await import( exec );
-    window.executor = executor;
-    initializeApp ( data );
     // 创建命令执行器
     const executor = new CommandExecutor({ debug: true });
+    window.executor = executor;
     executor.registerBatch({
       '层一功能1': () => console.log('执行: 层一功能1'),
       '层二折叠1': () => console.log('执行: 层二折叠1'),
@@ -26,6 +25,7 @@
       '层二功能1': () => console.log('执行: 层二功能1'),
       '层一功能2': () => console.log('执行: 层一功能2')
     });
+    initializeApp ( data, executor );
   } catch (error) {
     console.error(error);
   }

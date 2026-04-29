@@ -1,6 +1,6 @@
 // menuUI.js
 import { parse } from './dataParser.js';
-import { CommandExecutor } from './commandExecutor.js';
+// import { CommandExecutor } from './commandExecutor.js';
 
 // 创建样式
 function createStyles() {
@@ -234,7 +234,7 @@ function resetAllMenus() {
 }
 
 // 根据数据创建菜单项
-function createMenuItemsFromData(nodeArray, menuLevel) {
+function createMenuItemsFromData(nodeArray, menuLevel, commandExecutor) {
   const items = [];
   const executor = new CommandExecutor({ debug: true });
 
@@ -258,7 +258,7 @@ function createMenuItemsFromData(nodeArray, menuLevel) {
       }
       div.textContent = node.text;
       div.onclick = function() {
-        executor.execute(node.text);
+        commandExecutor.execute(node.text);
         openMulti();
       };
       items.push(div);
@@ -269,7 +269,7 @@ function createMenuItemsFromData(nodeArray, menuLevel) {
 }
 
 // 递归创建菜单DOM
-function createMenusFromData(dataArray, selectWrapper, menuLevel = 0) {
+function createMenusFromData(dataArray, selectWrapper, menuLevel = 0, commandExecutor) {
   dataArray.forEach((node) => {
     if (isNode(node) && node.children && node.children.length > 0) {
       const menu = document.createElement("div");
@@ -339,7 +339,7 @@ function createMultiSelectUI(treeData) {
 }
 
 // 初始化应用
-export function initializeApp( data ) {
+export function initializeApp( data, commandExecutor ) {
   createStyles();
 
   // 解析数据（使用 DataParser）
