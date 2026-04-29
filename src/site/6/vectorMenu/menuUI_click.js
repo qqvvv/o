@@ -274,7 +274,7 @@ function createMenuItemsFromData(nodeArray, menuLevel, commandExecutor) {
 }
 
 // 递归创建菜单DOM
-function createMenusFromData(dataArray, selectWrapper, menuLevel = 0) {
+function createMenusFromData(dataArray, selectWrapper, menuLevel = 0, commandExecutor) {
   dataArray.forEach((node) => {
     if (isNode(node) && node.children && node.children.length > 0) {
       const menu = document.createElement("div");
@@ -302,7 +302,7 @@ function createMenusFromData(dataArray, selectWrapper, menuLevel = 0) {
       selectWrapper.appendChild(menu);
 
       // 递归处理子节点
-      createMenusFromData(node.children, selectWrapper, menuLevel + 1);
+      createMenusFromData(node.children, selectWrapper, menuLevel + 1, commandExecutor);
     }
   });
 }
@@ -336,7 +336,7 @@ function createMultiSelectUI(treeData, commandExecutor) {
   selectWrapper.appendChild(rootMenu);
 
   // 递归创建子菜单
-  createMenusFromData(treeData, selectWrapper, 0);
+  createMenusFromData(treeData, selectWrapper, 0, commandExecutor);
 
   flexDiv.appendChild(selectWrapper);
 
