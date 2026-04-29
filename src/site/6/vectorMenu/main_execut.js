@@ -1,5 +1,5 @@
 (async () => {
-  const menu = "https://rra.pages.dev/6/vectorMenu/menuUI_esm.js";
+  const menu = "https://rra.pages.dev/6/vectorMenu/menuUI_click.js";
   const exec = "https://rra.pages.dev/6/vectorMenu/commandExecutor.js";
   try {
     const { initializeApp } = await import( menu );
@@ -13,7 +13,7 @@
 - 层一功能2 #?<comment= #YggdrAML
 `;
 
-    const { initializeApp } = await import( exec );
+    const { CommandExecutor } = await import( exec );
     window.executor = executor;
     initializeApp ( data );
     // 创建命令执行器

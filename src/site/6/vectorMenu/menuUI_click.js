@@ -236,6 +236,7 @@ function resetAllMenus() {
 // 根据数据创建菜单项
 function createMenuItemsFromData(nodeArray, menuLevel) {
   const items = [];
+  const executor = new CommandExecutor({ debug: true });
 
   nodeArray.forEach((node, index) => {
     if (isNode(node)) {
@@ -257,7 +258,7 @@ function createMenuItemsFromData(nodeArray, menuLevel) {
       }
       div.textContent = node.text;
       div.onclick = function() {
-        CommandExecutor.execute(node.text);
+        executor.execute(node.text);
         openMulti();
       };
       items.push(div);
