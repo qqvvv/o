@@ -128,6 +128,12 @@ function createStyles() {
 
     .sec_btn {
       --bgColor: #869cff;
+      width: calc(var(--sizeVar) * 4);
+      height: calc(var(--sizeVar) * 4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: calc(var(--sizeVar) * 3);
     }
 
     button {
@@ -236,7 +242,6 @@ function resetAllMenus() {
 // 根据数据创建菜单项
 function createMenuItemsFromData(nodeArray, menuLevel, commandExecutor) {
   const items = [];
-  const executor = new CommandExecutor({ debug: true });
 
   nodeArray.forEach((node, index) => {
     if (isNode(node)) {
