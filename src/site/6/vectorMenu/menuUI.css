@@ -1,4 +1,5 @@
 /**
+ * original
  * @alvarotrigo
  * https://codepen.io/alvarotrigo/pen/mdXPawB
  */
@@ -23,9 +24,12 @@ body {
   align-items: flex-start;
   width: fit-content;
   margin: 32px;
+  position: fixed;
+  right: 0;
+  bottom: 0;
 }
 .selectWrapper {
-  width: 100%;
+  width: calc(var(--sizeVar) * 24);
   position: relative;
   opacity: 0;
   pointer-events: none;
@@ -101,6 +105,13 @@ body {
 }
 .sec_btn {
   --bgColor: #869cff;
+  width: calc(var(--sizeVar) * 4);
+  height: calc(var(--sizeVar) * 4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--sizeVar) * 3);
+  align-items: flex-end;
 }
 button {
   font-family: "Roboto", sans-serif;
