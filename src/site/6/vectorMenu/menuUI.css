@@ -21,7 +21,7 @@ body {
 .flexDiv {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: flex-end;
   width: fit-content;
   margin: 32px;
   position: fixed;
@@ -49,6 +49,7 @@ body {
   overflow: hidden;
   background: #ffffff;
   transition: transform 300ms ease-in-out 0s, clip-path 300ms ease-in-out 0s;
+  bottom: 100%;
 }
 .multiSelect div {
   color: var(--textPrimary);
@@ -111,7 +112,6 @@ body {
   align-items: center;
   justify-content: center;
   font-size: calc(var(--sizeVar) * 3);
-  align-items: flex-end;
 }
 button {
   font-family: "Roboto", sans-serif;

@@ -1,5 +1,5 @@
 (async () => {
-  const menu = "https://rra.pages.dev/6/vectorMenu/menuUI_click.js";
+  const menu = "https://rra.pages.dev/6/vectorMenu/menuUI_esm.js";
   const exec = "https://rra.pages.dev/6/vectorMenu/commandExecutor.js";
   try {
     const { initializeApp } = await import( menu );
