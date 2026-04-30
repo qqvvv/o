@@ -29,13 +29,14 @@ body {
   bottom: 0;
 }
 .selectWrapper {
-  width: calc(var(--sizeVar) * 24);
+  width: calc(var(--sizeVar) * 25);
   position: relative;
   opacity: 0;
   pointer-events: none;
   transition: opacity 100ms linear 0s;
   filter: drop-shadow(0 6px 26px rgba(0, 0, 0, 0.24));
   padding-top: calc(var(--sizeVar) / 2);
+  bottom: calc(var(--sizeVar) * 4.5);
 }
 .multiSelect {
   clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
