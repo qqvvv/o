@@ -1,126 +1,9 @@
-// menuUI.js（或拆分为 menuBuilder.js）
+/**
+ * 菜单
+ * menuUI.js
+ */
 
 import { parse } from './dataParser.js';
-
-function createStyles() {
-  const style = document.createElement("style");
-  style.textContent = `
-    :root {
-      --bgColor: #0fddaf;
-      --txtColor: #ffffff;
-      --sizeVar: 8px;
-      --textPrimary: #4b4760;
-      --textSecondary: #7f7989;
-      --borderColor: #cccccc;
-    }
-    
-    body {
-      font-family: "Roboto", sans-serif;
-      font-size: calc(var(--sizeVar) * 1.75);
-    }
-    
-    .flexDiv {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      position: fixed;
-      right: 0;
-      bottom: 0;
-      margin: 32px;
-    }
-    
-    .selectWrapper {
-      width: calc(var(--sizeVar) * 20);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 100ms linear;
-    }
-    
-    .multiSelect {
-      border: 1px solid var(--borderColor);
-      border-radius: calc(var(--sizeVar) / 2);
-      background: #ffffff;
-      position: absolute;
-      overflow: hidden;
-    }
-    
-    .multiSelect div {
-      color: var(--textPrimary);
-      padding: 16px;
-      cursor: pointer;
-    }
-    
-    .multiSelect div:hover {
-      background-color: #f6f6f6;
-    }
-    
-    .multiSelect div[data-node-type="leaf"] {
-      padding: 10px 16px;
-    }
-    
-    .bottomBorder {
-      border-bottom: 1px solid var(--borderColor);
-    }
-    
-    .topBorder {
-      border-top: 1px solid var(--borderColor);
-    }
-    
-    .iconDiv {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    
-    .noSpace {
-      justify-content: flex-start;
-      gap: 6px;
-    }
-    
-    .titleDiv {
-      font-weight: 700;
-      pointer-events: none;
-    }
-    
-    .justHover i {
-      opacity: 0;
-    }
-    
-    .justHover:hover i {
-      opacity: 1;
-    }
-    
-    button {
-      font-family: "Roboto", sans-serif;
-      font-size: calc(var(--sizeVar) * 1.75);
-      font-weight: 500;
-      border: none;
-      padding: var(--sizeVar) calc(var(--sizeVar) * 2);
-      border-radius: calc(var(--sizeVar) / 2);
-      cursor: pointer;
-      background-color: var(--bgColor);
-      color: var(--txtColor);
-    }
-    
-    button:hover {
-      --bgColor: #1fcc9e;
-    }
-    
-    .sec_btn {
-      --bgColor: #869cff;
-      width: calc(var(--sizeVar) * 4);
-      height: calc(var(--sizeVar) * 4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .sec_btn:hover {
-      --bgColor: #6279e7;
-    }
-  `;
-  document.head.appendChild(style);
-}
 
 /**
  * 菜单生成器类
@@ -341,8 +224,6 @@ class MenuBuilder {
  * 初始化应用
  */
 export function initializeApp(data, commandExecutor) {
-  createStyles();
-
   // 解析数据
   const result = parse(data);
   console.log('解析结果:', JSON.stringify(result, null, 2));

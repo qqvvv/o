@@ -6,8 +6,9 @@
     try {
       const { referLibrary } = await import( url );
       await referLibrary([
+        "https://rra.pages.dev/6/vectorMenu/menuUI.css",
         "https://gcore.jsdelivr.net/gh/Flyer53/jsPanel4/es6module/jspanel.min.js",
-        "https://rra.pages.dev/6/vectorMenu/menuUI_esm.js?exportName=initializeApp",
+        "https://rra.pages.dev/6/vectorMenu/menuUI.js?exportName=initializeApp",
         "https://rra.pages.dev/6/vectorMenu/commandExecutor_esm.js?exportName=CommandExecutor",
       ]);
       jsPanel.create();
