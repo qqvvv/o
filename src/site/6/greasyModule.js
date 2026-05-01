@@ -8,7 +8,7 @@
       await referLibrary([
         "https://gcore.jsdelivr.net/gh/Flyer53/jsPanel4/es6module/jspanel.min.js",
         "https://rra.pages.dev/6/vectorMenu/menuUI_esm.js?exportName=initializeApp",
-        "https://rra.pages.dev/6/vectorMenu/commandExecutor.js?exportName=CommandExecutor",
+        "https://rra.pages.dev/6/vectorMenu/commandExecutor_esm.js?exportName=CommandExecutor",
       ]);
       jsPanel.create();
 
@@ -21,7 +21,7 @@
   - 层二功能1 #?<endCluster=true &simpleAnchor=alias
 - 层一功能2 #?<comment= #YggdrAML
 `;
-      const { CommandExecutor } = await import( exec );
+
     // 创建命令执行器
     const executor = new CommandExecutor({ debug: true });
     window.executor = executor;
