@@ -2,7 +2,7 @@
   'use strict';
 
   const behaviour = async () => {
-    const url = "https://rra.pages.dev/6/library-loader.js";
+    const url = "https://rra.pages.dev/6/library-loader_230.js";
     try {
       const { referLibrary } = await import( url );
       await referLibrary([
