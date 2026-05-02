@@ -2,6 +2,7 @@ import initPlayer from "./aPlr-LrcSync-Mdl-050.js";
 
 export async function initModule() {
   const target =
+    document.querySelector("main.content") ||
     document.querySelector("article.popover-hint") ||
     document.querySelector("div.markdown-body") ||
     document.body;

@@ -22,8 +22,8 @@
       const aplayerLrc = [
         "https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.css",
         "https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.js?exportName=APlayer",
-        "https://rra.pages.dev/6/aPlr-LrcSync-050.js?exportName=initModule",
-        "https://rra.pages.dev/6/aPlr-LrcSync-Mdl-050.js",
+        "https://rra.pages.dev/6/aPlr-LrcSync-050.js",
+
       ];
       await referLibrary(aplayerLrc);
       initModule();
