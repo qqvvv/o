@@ -1,15 +1,4 @@
 export default async function initPlayer({ mount, lyricsMount, mdText }) {
-  await import("https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.js");
-
-  if (!document.querySelector("#aplayer-css")) {
-    const css = document.createElement("link");
-    css.id = "aplayer-css";
-    css.rel = "stylesheet";
-    css.href =
-      "https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.css";
-    document.head.appendChild(css);
-  }
-
   const { audioList, autoplay } = parseMdonLite(mdText);
 
   mount.innerHTML = "";
