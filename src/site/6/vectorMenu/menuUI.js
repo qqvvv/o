@@ -116,7 +116,11 @@ class MenuBuilder {
 
         div.textContent = node.text;
         div.onclick = () => {
-          commandExecutor.execute(node.text);  // ✅ 注意：commandExecutor 是实例
+          // 传递节点的元数据，支持 funcName 动态函数名
+          commandExecutor.execute(node.text, {
+            funcName: node.funcName,  // 如果菜单中定义了 funcName
+            // ... 其他属性
+          });
           this.toggleMenu();
         };
         items.push(div);
