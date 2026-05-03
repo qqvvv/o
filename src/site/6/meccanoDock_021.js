@@ -1,3 +1,7 @@
+/**
+ * meccanoDock
+ * 0.22
+ */
 (() => {
   'use strict';
 
@@ -45,13 +49,16 @@
     try {
       const { referLibrary } = await import(core);
       await referLibrary(libs);
-      // 创建命令执行器
-      const executor = new CommandExecutor({ behaviours, debug: true });
+      // 初始化 executor
+      const executor = new CommandExecutor({ 
+        globalScope: appCommands,  // ✅ 传入隔离的对象，不是 window
+        debug: true 
+      });
       // window.executor = executor;
       // 如果需要特殊处理，显式注册
       executor.register('attachPanel', () => {
         console.log('自定义的 attachPanel');
-        appCommands.attachPanel();
+        behaviours.attachPanel();
         // ... 其他逻辑
       });
       initializeApp ( yggd, executor );
