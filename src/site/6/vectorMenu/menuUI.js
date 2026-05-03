@@ -226,7 +226,7 @@ class MenuBuilder {
 export function initializeApp(data, commandExecutor) {
   // 解析数据
   const result = parse(data);
-  console.log('解析结果:', JSON.stringify(result, null, 2));
+  console.log('解析结果:', result);
 
   // 创建菜单UI
   const builder = new MenuBuilder();
