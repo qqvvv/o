@@ -1,7 +1,8 @@
 /**
  * meccanoDock
- * 0.22
+ * 0.23
  */
+
 (() => {
   'use strict';
 
@@ -51,7 +52,7 @@
       await referLibrary(libs);
       // 初始化 executor
       const executor = new CommandExecutor({ 
-        globalScope: appCommands,  // ✅ 传入隔离的对象，不是 window
+        globalScope: behaviours,  // ✅ 传入隔离的对象，不是 window
         debug: true 
       });
       // window.executor = executor;
