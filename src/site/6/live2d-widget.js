@@ -16,8 +16,8 @@
         "jsonPath":"https://unpkg.2333332.xyz/live2d-widget-model-mashiro-seifuku@1.0.1/assets/seifuku.model.json"},
         "display":{
           "position":"right",
-          "width":480,
-          "height":960,
+          "width":420,
+          "height":840,
           "hOffset":0,
           "vOffset":0
         },

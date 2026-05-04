@@ -94,7 +94,7 @@ module.exports = async (data) => {
     noteIconsSettings,
     timestampSettings,
     baseTheme: process.env.BASE_THEME || "dark",
-    siteName: process.env.SITE_NAME_HEADER || "recursive Rresolve Akashic",
+    siteName: process.env.SITE_NAME_HEADER || "recursive Resolve Akashic",
     siteLogoPath: logoPath,
     mainLanguage: process.env.SITE_MAIN_LANGUAGE || "en",
     siteBaseUrl: baseUrl,
