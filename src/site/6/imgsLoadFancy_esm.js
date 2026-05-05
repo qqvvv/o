@@ -1,5 +1,5 @@
 /**
- * ImageLoader 模块 (ESM)
+ * imageLoader 模块 v0.2.6
  * 输入图片网址数组，返回包含加载进度的容器
  */
 
@@ -96,6 +96,8 @@ function _createStyles() {
  * 创建图片加载器
  * @param {Array<string>} imageUrls - 图片网址数组
  * @param {Object} options - 配置选项
+ * @param {Function} options.imagesLoaded - imagesLoaded库
+ * @param {Object} options.Fancybox - Fancybox库（可选）
  * @returns {HTMLElement} 包含图片容器的 div
  */
 function create(imageUrls, options = {}) {
@@ -128,6 +130,9 @@ function create(imageUrls, options = {}) {
   // 添加图片
   const fragment = document.createDocumentFragment();
   const gallery_items = imageUrls.map(src => ({ src, type: "image" }));
+
+  // ✅ 从options中获取依赖
+  const { imagesLoaded, Fancybox } = options;
   
   imageUrls.forEach(url => {
     const li = document.createElement('li');
@@ -137,19 +142,23 @@ function create(imageUrls, options = {}) {
     img.src = url;
     
     // ✅ 正确：防守式编程
-    if (typeof Fancybox !== "undefined" && Fancybox) {
+    if (Fancybox) {
       img.addEventListener("click", (event) => {
         try {
           const elem = event.target.closest("li:has(img)");
           if (!elem) return;
 
-          const container = elem.closest("ul.image-loader-ul");
-          const idxOfCall = Array.from(container.children).indexOf(elem);
+          const parentContainer = elem.closest("ul.image-loader-ul");
+          if (!parentContainer) return;
+          
+          const idxOfCall = Array.from(parentContainer.children).indexOf(elem);
 
-          Fancybox.show(gallery_items, {
-            slug: "gallery",
-            startIndex: idxOfCall,
-          });
+          if (Fancybox && typeof Fancybox.show === 'function') {
+            Fancybox.show(gallery_items, {
+              slug: "gallery",
+              startIndex: idxOfCall,
+            });
+          }
         } catch (error) {
           console.warn("Gallery init failed:", error);
           // 只有 Fancybox 功能失效，不影响页面
@@ -175,7 +184,6 @@ function create(imageUrls, options = {}) {
     progressElem.toString().indexOf('Unknown') === -1;
 
   // 监听图片加载
-  const { imagesLoaded } = options;  // ✓ 从参数获取
   if (imagesLoaded) {
     const imgLoad = imagesLoaded(container);
 
