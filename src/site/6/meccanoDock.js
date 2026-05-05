@@ -7,7 +7,7 @@
   'use strict';
 
   const method = async () => {
-    const core = "https://rra.pages.dev/6/library-loader_230.js";
+    const core = "https://rra.pages.dev/6/referLibrary.js";
     const libs = [
       "https://rra.pages.dev/6/vectorMenu/menuUI.css",
       "https://rra.pages.dev/6/vectorMenu/menuUI.js?exportName=initializeApp",
