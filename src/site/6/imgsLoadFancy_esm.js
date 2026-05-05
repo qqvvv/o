@@ -175,8 +175,9 @@ function create(imageUrls, options = {}) {
     progressElem.toString().indexOf('Unknown') === -1;
 
   // 监听图片加载
-  if (window.imagesLoaded) {
-    const imgLoad = window.imagesLoaded(container);
+  const { imagesLoaded } = options;  // ✓ 从参数获取
+  if (imagesLoaded) {
+    const imgLoad = imagesLoaded(container);
 
     imgLoad.on('progress', function(instance, image) {
       // 更新图片状态
