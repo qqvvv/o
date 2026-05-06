@@ -1,5 +1,5 @@
 /**
- * 改进的动态库加载器 v2.3.0
+ * 改进的动态库加载器 v0.26
  * 
  * 重大变更：
  * ✅ 移除 candidates 相关逻辑（不再做大小写猜测）
@@ -530,6 +530,7 @@ export async function referLibrary(inputs, {
     callback,
     forceTag = false,
     forceGlobal = false,  // ✨ 新参数
+    mountTarget = null,      // ✨ 新参数：挂载目标对象
     debug = false
 } = {}) {
 
