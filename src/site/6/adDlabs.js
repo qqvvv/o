@@ -91,18 +91,27 @@ function _extractLibInfo(url) {
 }
 
 /**
- * 从 URL 生成对象 key（基于文件名）
- * 例如：jspanel.min.js → jspanel_min_js
+ * 从 URL 生成对象 key（基于文件名改进版）
+ * - CSS 文件：库名 + '_css' 后缀
+ * - JS 文件：纯库名（无扩展名）
  */
 function _generateObjectKey(url) {
     try {
         const fileName = url.split('/').pop().split('?')[0];
-        // 移除扩展名，用下划线替换特殊字符
-        const key = fileName
+        const isCSS = fileName.match(/\.css$/i);
+        
+        // 提取库名（移除版本号和 .min 等修饰符）
+        let libName = fileName
             .replace(/\.(min|umd|esm|pkgd)?\.(js|css)$/i, '')
             .replace(/[.-]/g, '_')
             .toLowerCase();
-        return key || 'lib_unknown';
+        
+        // CSS 文件添加 _css 后缀
+        if (isCSS) {
+            libName = `${libName}_css`;
+        }
+        
+        return libName || 'lib_unknown';
     } catch {
         return 'lib_unknown';
     }
@@ -512,6 +521,7 @@ async function _loadCSS(
  *   - callback: 加载完成后的回调函数
  *   - forceTag: 强制使用 <script> 标签（跳过 ESM import）
  *   - forceGlobal: 强制挂载到 window（默认 false，只挂载到返回对象）
+ *   - mountTarget: 挂载目标对象（如 behaviours），默认 null
  *   - debug: 启用调试日志
  * 
  * @returns {Promise<object>} 加载结果对象（key: fileName, value: module）
@@ -581,12 +591,31 @@ export async function referLibrary(inputs, {
         const loaded = Object.values(resultObject).filter(r => r !== null).length;
         logger.log(`✅ 加载完成 (成功 ${loaded}/${tasks.length})`, 'success');
     }
+
+    // ✨ 新增：自动挂载到目标对象
+    if (mountTarget && typeof mountTarget === 'object') {
+        tasks.forEach(task => {
+            const { objectKey, exportName, isCSS } = task;
+            const moduleOrLib = resultObject[objectKey];
+            
+            if (moduleOrLib && !isCSS) {  // 只挂载 JS 文件
+                // 优先挂载导出的函数/类，如果没有则挂载整个模块
+                const toMount = (exportName && moduleOrLib[exportName]) || moduleOrLib;
+                mountTarget[objectKey] = toMount;
+                
+                if (debug && logger) {
+                    logger.log(`  → 已挂载到 ${mountTarget.constructor.name}.${objectKey}`, 'log');
+                }
+            }
+        });
+    }
+
     // ✨ 新增：可选挂载到 window（由 forceGlobal 控制）
     if (forceGlobal) {
         tasks.forEach(task => {
-            const { objectKey, exportName } = task;
+            const { objectKey, exportName, isCSS } = task;
             const moduleOrLib = resultObject[objectKey];
-            if (moduleOrLib && exportName) {
+            if (moduleOrLib && !isCSS && exportName) {
                 window[exportName] = moduleOrLib;
                 if (debug && logger) {
                     logger.log(`  → 已挂载到 window.${exportName}`, 'log');
