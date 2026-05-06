@@ -73,6 +73,24 @@ const LIBRARY_RULES = [
 // ==================== 工具函数 ====================
 
 /**
+ * 从 URL 提取库名和文件名
+ */
+function _extractLibInfo(url) {
+    try {
+        const fileName = url.split('/').pop().split('?')[0];
+        const libName = fileName
+            .replace(/\.(min|umd|esm|pkgd)\.js$/i, '')
+            .replace(/\.min\.css$/i, '')
+            .replace(/\.(js|css)$/i, '')
+            .toLowerCase();
+
+        return { fileName, libName };
+    } catch {
+        return { fileName: url, libName: '' };
+    }
+}
+
+/**
  * 从 URL 生成对象 key（基于文件名）
  * 例如：jspanel.min.js → jspanel_min_js
  */
