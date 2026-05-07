@@ -1,5 +1,5 @@
 /**
- * ImageLoader 模块 - 图片加载容器
+ * ImageLoader 模块 - 图片加载容器 v0.24
  * 依赖库（需通过加载器加载）:
  *   - imagesLoaded: 图片加载进度检测
  *   - Fancybox: 图片灯箱展示
