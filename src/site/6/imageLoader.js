@@ -1,205 +1,137 @@
+// imageLoader.js
 /**
- * ImageLoader 模块 - 图片加载容器 v0.24
- * 依赖库（需通过加载器加载）:
- *   - imagesLoaded: 图片加载进度检测
- *   - Fancybox: 图片灯箱展示
+ * ImageLoader 模块 - 图片加载容器
+ * 依赖: imagesLoaded, Fancybox (可选)
  */
+export const ImageLoader = (() => {
+  /**
+   * 创建图片加载器容器
+   * @param {Array<string>} imageUrls - 图片网址数组
+   * @param {Object} options - 配置选项
+   * @param {Function} options.onProgress - 进度回调
+   * @param {Function} options.onComplete - 完成回调
+   * @returns {HTMLElement} 包含图片容器的 div
+   */
+  function create(imageUrls, options = {}) {
+    // 创建主容器
+    const wrapper = document.createElement('div');
+    wrapper.className = 'image-loader-container';
 
-/**
- * 创建图片加载容器
- * @param {Array<string>} imageUrls - 图片网址数组
- * @param {Object} options - 配置选项
- * @param {Function} options.onProgress - 进度回调 (current, total, percentage)
- * @param {Function} options.onComplete - 完成回调 (total, loaded)
- * @param {number} options.hideStatusDelay - 加载完成后隐藏状态栏的延迟（ms，默认500）
- * @returns {HTMLElement} 包含图片容器的 div
- */
-export function createImageLoader(imageUrls, options = {}) {
-  // 参数验证
-  if (!Array.isArray(imageUrls) || imageUrls.length === 0) {
-    console.warn('ImageLoader: 无效的图片网址数组');
-    return document.createElement('div');
-  }
+    // 创建状态显示元素
+    const statusElem = document.createElement('div');
+    statusElem.className = 'image-loader-status';
 
-  const {
-    onProgress,
-    onComplete,
-    hideStatusDelay = 500
-  } = options;
+    const progressElem = document.createElement('progress');
+    progressElem.className = 'image-loader-progress';
+    progressElem.max = imageUrls.length;
+    progressElem.value = 0;
 
-  // ==================== 创建 DOM 结构 ====================
+    const statusText = document.createElement('div');
+    statusText.textContent = '0 / ' + imageUrls.length;
 
-  // 创建主容器
-  const wrapper = document.createElement('div');
-  wrapper.className = 'image-loader-container';
-  wrapper.setAttribute('data-loader', 'imageLoader');
+    statusElem.appendChild(progressElem);
+    statusElem.appendChild(statusText);
 
-  // 创建状态显示元素
-  const statusElem = document.createElement('div');
-  statusElem.className = 'image-loader-status';
+    // 创建图片容器
+    const container = document.createElement('ul');
+    container.className = 'image-loader-ul';
 
-  const progressElem = document.createElement('progress');
-  progressElem.className = 'image-loader-progress';
-  progressElem.max = imageUrls.length;
-  progressElem.value = 0;
+    // 为 Fancybox 准备数据
+    const gallery_items = imageUrls.map(src => ({ src, type: "image" }));
 
-  const statusText = document.createElement('div');
-  statusText.className = 'image-loader-text';
-  statusText.textContent = `0 / ${imageUrls.length}`;
+    // 🔑 获取 Fancybox 实例（优先级：options > 全局）
+    const FancyboxLib = options.Fancybox || (typeof Fancybox !== "undefined" ? Fancybox : null);
 
-  statusElem.appendChild(progressElem);
-  statusElem.appendChild(statusText);
+    // 添加图片元素
+    const fragment = document.createDocumentFragment();
+    imageUrls.forEach(url => {
+      const li = document.createElement('li');
+      li.className = 'is-loading';
 
-  // 创建图片容器
-  const container = document.createElement('ul');
-  container.className = 'image-loader-ul';
-  container.setAttribute('role', 'list');
+      const img = document.createElement('img');
+      img.src = url;
 
-  // ==================== 为 Fancybox 准备数据 ====================
+      // ✅ Fancybox 交互（防守式）改进的
+      if (typeof Fancybox !== "undefined" && Fancybox) {
+        img.addEventListener("click", (event) => {
+          try {
+            const elem = event.target.closest("li:has(img)");
+            if (!elem) return;
 
-  const gallery_items = imageUrls.map(src => ({
-    src,
-    type: "image"
-  }));
+            const imageContainer = elem.closest("ul.image-loader-ul");
+            const idxOfCall = Array.from(imageContainer.children).indexOf(elem);
 
-  // ==================== 添加图片元素 ====================
+            // 🔑 调用 Fancybox（支持两种来源）
+            Fancybox.show(gallery_items, {
+              slug: "gallery",
+              startIndex: idxOfCall,
+            });
+          } catch (error) {
+            console.warn("Gallery init failed:", error);
+          }
+        });
+      } else {
+        console.warn("Fancybox 未加载 - 图片库功能不可用");
+        img.style.cursor = "default";
+      }
 
-  const fragment = document.createDocumentFragment();
+      li.appendChild(img);
+      fragment.appendChild(li);
+    });
 
-  imageUrls.forEach((url, index) => {
-    const li = document.createElement('li');
-    li.className = 'image-loader-item is-loading';
-    li.setAttribute('data-index', index);
-    li.setAttribute('role', 'listitem');
+    container.appendChild(fragment);
+    wrapper.appendChild(statusElem);
+    wrapper.appendChild(container);
 
-    const img = document.createElement('img');
-    img.src = url;
-    img.alt = `Gallery image ${index + 1}`;
-    img.decoding = 'async';  // 异步解码
+    // ✅ 监测加载进度（imagesLoaded）
+    let loadedCount = 0;
+    const supportsProgress = progressElem &&
+      progressElem.toString().indexOf('Unknown') === -1;
 
-    // ✅ Fancybox 交互（防守式编程）
-    _setupFancyboxInteraction(img, gallery_items, container, index);
+    if (window.imagesLoaded) {
+      const imgLoad = imagesLoaded(container);
 
-    li.appendChild(img);
-    fragment.appendChild(li);
-  });
+      imgLoad.on('progress', function(instance, image) {
+        // 更新单张图片状态
+        image.img.parentNode.className = image.isLoaded ? '' : 'is-broken';
 
-  container.appendChild(fragment);
-  wrapper.appendChild(statusElem);
-  wrapper.appendChild(container);
+        // 更新进度
+        loadedCount++;
+        if (supportsProgress) {
+          progressElem.value = loadedCount;
+        }
+        statusText.textContent = loadedCount + ' / ' + imageUrls.length;
 
-  // ==================== 监测加载进度 ====================
+        // 触发进度回调
+        options.onProgress?.({
+          current: loadedCount,
+          total: imageUrls.length,
+          percentage: (loadedCount / imageUrls.length * 100).toFixed(2)
+        });
+      });
 
-  let loadedCount = 0;
-  const supportsProgress = progressElem &&
-    progressElem.toString().indexOf('Unknown') === -1;
+      imgLoad.on('always', function() {
+        // 加载完成，隐藏状态栏
+        setTimeout(() => {
+          statusElem.style.opacity = '0';
+        }, 500);
 
-  // 检查 imagesLoaded 依赖
-  if (typeof window.imagesLoaded === 'undefined') {
-    console.error('ImageLoader: imagesLoaded 库未加载');
-    statusElem.style.display = 'none';
+        // 触发完成回调
+        options.onComplete?.({
+          total: imageUrls.length,
+          loaded: loadedCount
+        });
+      });
+
+      statusElem.style.opacity = '1';
+    } else {
+      console.warn('imagesLoaded 库未加载 - 进度监测不可用');
+    }
+
     return wrapper;
   }
 
-  // 初始化进度监测
-  const imgLoad = window.imagesLoaded(container);
-
-  imgLoad.on('progress', function(instance, image) {
-    // 更新单张图片的加载状态
-    const itemElem = image.img.closest('.image-loader-item');
-    if (itemElem) {
-      itemElem.classList.toggle('is-loading', !image.isLoaded);
-      itemElem.classList.toggle('is-broken', !image.isLoaded && image.img.naturalWidth === 0);
-    }
-
-    // 更新进度计数
-    loadedCount++;
-
-    if (supportsProgress) {
-      progressElem.value = loadedCount;
-    }
-
-    const percentage = ((loadedCount / imageUrls.length) * 100).toFixed(2);
-    statusText.textContent = `${loadedCount} / ${imageUrls.length}`;
-
-    // 触发进度回调
-    if (typeof onProgress === 'function') {
-      onProgress({
-        current: loadedCount,
-        total: imageUrls.length,
-        percentage: parseFloat(percentage)
-      });
-    }
-  });
-
-  imgLoad.on('always', function(instance) {
-    // 加载完成，延迟隐藏状态栏
-    setTimeout(() => {
-      statusElem.style.opacity = '0';
-      statusElem.style.pointerEvents = 'none';
-    }, hideStatusDelay);
-
-    // 触发完成回调
-    if (typeof onComplete === 'function') {
-      onComplete({
-        total: imageUrls.length,
-        loaded: loadedCount,
-        failed: imageUrls.length - loadedCount
-      });
-    }
-  });
-
-  // 初始显示状态
-  statusElem.style.opacity = '1';
-  statusElem.style.transition = 'opacity 0.5s ease-out';
-
-  return wrapper;
-}
-
-// ==================== 辅助函数 ====================
-
-/**
- * 设置 Fancybox 交互
- */
-function _setupFancyboxInteraction(img, gallery_items, container, index) {
-  if (typeof window.Fancybox === 'undefined') {
-    console.warn('ImageLoader: Fancybox 未加载 - 图片灯箱功能不可用');
-    img.style.cursor = 'default';
-    return;
-  }
-
-  img.style.cursor = 'pointer';
-
-  img.addEventListener('click', (event) => {
-    try {
-      const elemLi = event.target.closest('li.image-loader-item');
-      if (!elemLi) return;
-
-      const imageContainer = elemLi.closest('ul.image-loader-ul');
-      const idxOfCall = Array.from(imageContainer.children).indexOf(elemLi);
-
-      // 使用 Fancybox 显示灯箱
-      window.Fancybox.show(gallery_items, {
-        slug: 'gallery',
-        startIndex: idxOfCall,
-        on: {
-          init: (fancybox) => {
-            console.log('Fancybox 已初始化');
-          }
-        }
-      });
-    } catch (error) {
-      console.error('ImageLoader: Fancybox 交互出错:', error);
-      // 错误不影响页面展示
-    }
-  });
-}
-
-/**
- * 导出对象接口（兼容旧式调用）
- */
-export const ImageLoader = {
-  create: createImageLoader
-};
-
-export default ImageLoader;
+  return {
+    create
+  };
+})();
