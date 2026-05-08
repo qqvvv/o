@@ -367,10 +367,11 @@ async function _loadJS(
                 logger.log(`  → 尝试 ESM import()`, 'log');
             }
             const module = await import(url);
-            if (exportName) {
-                const exported = module[exportName] || module.default || module;
-                window[exportName] = exported;
-            }
+            // ❌ 删除这一段：
+            // if (exportName) {
+            //     const exported = module[exportName] || module.default || module;
+            //     window[exportName] = exported;
+            // }
             if (debug && logger && startTime) {
                 const duration = Math.round(performance.now() - startTime);
                 logger.addTableRow(
