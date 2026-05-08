@@ -88,42 +88,49 @@ export const ImageLoader = (() => {
     const supportsProgress = progressElem &&
       progressElem.toString().indexOf('Unknown') === -1;
 
-    if (window.imagesLoaded) {
-      const imgLoad = imagesLoaded(container);
+    // ✅ 正确的 imagesLoaded 处理
+    const imagesLoadedLib = options.imagesLoaded;  // 🔑 从 options 获取
 
-      imgLoad.on('progress', function(instance, image) {
-        // 更新单张图片状态
-        image.img.parentNode.className = image.isLoaded ? '' : 'is-broken';
+    if (imagesLoadedLib && typeof imagesLoadedLib === 'function') {
+      try {
+        const imgLoad = imagesLoadedLib(container);
 
-        // 更新进度
-        loadedCount++;
-        if (supportsProgress) {
-          progressElem.value = loadedCount;
-        }
-        statusText.textContent = loadedCount + ' / ' + imageUrls.length;
+        imgLoad.on('progress', function(instance, image) {
+          // 更新单张图片状态
+          image.img.parentNode.className = image.isLoaded ? '' : 'is-broken';
 
-        // 触发进度回调
-        options.onProgress?.({
-          current: loadedCount,
-          total: imageUrls.length,
-          percentage: (loadedCount / imageUrls.length * 100).toFixed(2)
+          // 更新进度
+          loadedCount++;
+          if (supportsProgress) {
+            progressElem.value = loadedCount;
+          }
+          statusText.textContent = loadedCount + ' / ' + imageUrls.length;
+
+          // 触发进度回调
+          options.onProgress?.({
+            current: loadedCount,
+            total: imageUrls.length,
+            percentage: (loadedCount / imageUrls.length * 100).toFixed(2)
+          });
         });
-      });
 
-      imgLoad.on('always', function() {
-        // 加载完成，隐藏状态栏
-        setTimeout(() => {
-          statusElem.style.opacity = '0';
-        }, 500);
+        imgLoad.on('always', function() {
+          // 加载完成，隐藏状态栏
+          setTimeout(() => {
+            statusElem.style.opacity = '0';
+          }, 500);
 
-        // 触发完成回调
-        options.onComplete?.({
-          total: imageUrls.length,
-          loaded: loadedCount
+          // 触发完成回调
+          options.onComplete?.({
+            total: imageUrls.length,
+            loaded: loadedCount
+          });
         });
-      });
 
-      statusElem.style.opacity = '1';
+        statusElem.style.opacity = '1';
+      } catch (error) {
+        console.warn('imagesLoaded 执行失败:', error);
+      }
     } else {
       console.warn('imagesLoaded 库未加载 - 进度监测不可用');
     }
@@ -131,7 +138,5 @@ export const ImageLoader = (() => {
     return wrapper;
   }
 
-  return {
-    create
-  };
+  return { create };
 })();

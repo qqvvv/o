@@ -62,13 +62,8 @@
         });
 
         // ✨ 调用 ImageLoader 接口
-        const imageContainer = ImageLoader.create(imageUrls, {
-          onProgress: (progress) => {
-            console.log(`加载进度: ${progress.percentage}%`);
-          },
-          onComplete: (result) => {
-            console.log(`加载完成: ${result.loaded}/${result.total}`);
-          }
+        const imageContainer = behaviours.imageloader_js.create(imageUrls, {
+          imagesLoaded: behaviours["imagesloaded@5_0_0"].default,
         });
 
         // 现在可以直接调用挂载的函数
