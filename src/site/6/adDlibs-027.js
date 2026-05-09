@@ -387,18 +387,6 @@ async function _loadJS(
             }
             // ⚠️ import() 虽然没报错，但库没有被正确初始化
             // 这说明库是 IIFE 类型，需要用 <script> 标签
-            throw new Error('Library not properly initialized by import()');
-            if (debug && logger && startTime) {
-                const duration = Math.round(performance.now() - startTime);
-                logger.addTableRow(
-                    _getFileName(url),
-                    _extractSourceLabel(url),
-                    exportName || '-',
-                    'ESM',
-                    duration
-                );
-            }
-            //return module;
         } catch (e) {
             // import 失败 → 降级到 <script> 标签
             if (debug && logger) {

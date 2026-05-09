@@ -62,7 +62,7 @@ export const ImageLoader = (() => {
             const idxOfCall = Array.from(imageContainer.children).indexOf(elem);
 
             // 🔑 调用 Fancybox（支持两种来源）
-            Fancybox.show(gallery_items, {
+            FancyboxLib.show(gallery_items, {
               slug: "gallery",
               startIndex: idxOfCall,
             });
