@@ -438,33 +438,43 @@ function _loadViaScript(
         script.src = url;
         script.setAttribute('data-lib-id', domId);
         script.setAttribute('data-loader', 'referLibrary');
+        
         script.onload = async () => {
             try {
                 let result = true;
+
                 if (exportName) {
-                    const exported = _extractFromGlobal(exportName, debug, logger);
-                    result = exported || window[exportName] || true;
+                    // ✨ 直接从 window 获取（IIFE 已自动挂载）
+                    result =  window[exportName];
+
+                    if (result === undefined) {
+                        throw new Error(`Library ${exportName} not found in window`);
+                    }
                 }
+
                 if (debug && logger && startTime) {
                     const duration = Math.round(performance.now() - startTime);
                     logger.addTableRow(
                         _getFileName(url),
                         _extractSourceLabel(url),
                         exportName || '-',
-                        format === 'umd' ? 'UMD' : 'Global',
+                        format === 'umd' ? 'UMD' : 'Global（IIFE）',
                         duration
                     );
                 }
+
                 resolve(result);
             } catch (err) {
                 console.error(`脚本处理错误: ${err.message}`);
                 reject(err);
             }
         };
+
         script.onerror = () => {
             const error = new Error(`Failed to load: ${url}`);
             reject(error);
         };
+        
         document.head.appendChild(script);
     });
 }

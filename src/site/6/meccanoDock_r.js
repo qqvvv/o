@@ -29,7 +29,7 @@
     ];
 
     const behaviours = {
-      syncPlay: async() => {
+      syncPlay: async () => {
         const aplayerLrc = [
           "https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.css",
           "https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.js",
@@ -37,15 +37,15 @@
         ];
         
         // ✨ 自动挂载到 behaviours
-        await behaviours.refer(aplayerLrc, { 
-          mountTarget: behaviours  // this 指向 behaviours
+        await behaviours.refer(aplayerLrc, {
+          mountTarget: behaviours,  // this 指向 behaviours
         });
         
         // 现在可以直接调用挂载的函数
-        behaviours.aPlr_LrcSync_050_js?.();  // initModule 已挂载
+        behaviours.aplr_lrcsync_050_js?.();  // initModule 已挂载
       },
 
-      attachPanel: async() => {
+      attachPanel: async () => {
         const jsPanel4 = [
           "https://esm.sh/imagesloaded@5.0.0",
           "https://rra.pages.dev/6/imgload.css",
@@ -57,18 +57,13 @@
         ];
         
         // ✨ 自动挂载到 behaviours
-        await behaviours.refer(jsPanel4, { 
-          mountTarget: behaviours  // this 指向 behaviours
+        await behaviours.refer(jsPanel4, {
+          mountTarget: behaviours,  // this 指向 behaviours
         });
 
         // ✨ 调用 ImageLoader 接口
-          const imageContainer = ImageLoader.create(imageUrls, {
-            onProgress: (progress) => {
-              console.log(`加载进度: ${progress.percentage}%`);
-            },
-            onComplete: (result) => {
-              console.log(`加载完成: ${result.loaded}/${result.total}`);
-            }
+          const imageContainer = behaviours.imageloader_js.create(imageUrls, {
+            imagesLoaded: behaviours["imagesloaded@5_0_0"].default,
           });
         
         // 现在可以直接调用挂载的函数
@@ -81,6 +76,21 @@
       },
 
       '层一功能1': () => console.log('执行: 层一功能1'),
+      '层二折叠1': () => console.log('执行: 层二折叠1'),
+      '层三功能1': () => console.log('执行: 层三功能1'),
+      '层三功能2': () => console.log('执行: 层三功能2'),
+      '层二功能1': async () => {
+        const aplayerLrc = [
+          "https://unpkg.com/live2d-widget@3.1.4/lib/L2Dwidget.min.js",
+        ];
+
+        await behaviours.refer(aplayerLrc, {
+          mountTarget: behaviours,  // this 指向 behaviours
+          forceTag: true,
+        });
+        
+        L2Dwidget.init();
+      },
     };
 
     try {
@@ -98,7 +108,6 @@
         globalScope: behaviours,
         debug: true,
       });
-
       behaviours.menuui_js(yggd, executor);
 
     } catch (error) {
@@ -120,7 +129,6 @@
       console.warn("Instance already running. Aborting.");
       return;
     }
-
     window.meLoaded = true;
 
     try {
