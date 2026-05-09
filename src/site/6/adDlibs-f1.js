@@ -1,70 +1,40 @@
 /**
- * 改进的动态库加载器 v0.29
+ * 改进的动态库加载器 v0.30
  * 
- * 核心修复：
- * ✅ 彻底分离 ESM 模块 和 IIFE 脚本加载
- * ✅ ESM: import() → 返回模块对象
- * ✅ IIFE: <script> → 自动挂载 window，返回全局引用
- * ✅ 修复 mountTarget 挂载逻辑（正确区分模块和全局变量）
- * ✅ 详细的加载类型日志，便于调试
+ * 核心改进：
+ * ✅ 两段式格式检测（特征检测 + 动态检测）
+ * ✅ 修复 Live2D IIFE 伪成功识别
+ * ✅ 保留 ESM 的 .default 导出模式
+ * ✅ 智能降级逻辑（区分真失败和伪成功）
  */
 
 import { DebugLogger } from './debug-logger.js';
 
-// ==================== 库规则表 ====================
-
 const LIBRARY_RULES = [
-    // jQuery 生态
     { pattern: /^jquery/i, exportName: 'jQuery', type: 'js' },
     { pattern: /^popper/i, exportName: 'Popper', type: 'js' },
-    
-    // Bootstrap
     { pattern: /^bootstrap/i, exportName: 'bootstrap', type: 'both' },
-    
-    // 图表库
     { pattern: /^chart\.?js/i, exportName: 'Chart', type: 'js' },
     { pattern: /^echarts/i, exportName: 'echarts', type: 'js' },
-    
-    // 代码高亮
     { pattern: /^highlight\.?js/i, exportName: 'hljs', type: 'js' },
     { pattern: /^prism(js)?/i, exportName: 'Prism', type: 'both' },
-    
-    // 工具库
     { pattern: /^lodash/i, exportName: '_', type: 'js' },
     { pattern: /^underscore/i, exportName: '_', type: 'js' },
     { pattern: /^axios/i, exportName: 'axios', type: 'js' },
     { pattern: /^gsap/i, exportName: 'gsap', type: 'js' },
     { pattern: /^anime/i, exportName: 'anime', type: 'js' },
     { pattern: /^marked/i, exportName: 'marked', type: 'js' },
-    
-    // 3D 库
     { pattern: /^three(\.js)?/i, exportName: 'THREE', type: 'js' },
-    
-    // 图片加载相关
     { pattern: /imagesloaded|imageloaded|imagesload/i, exportName: 'imagesLoaded', type: 'js' },
     { pattern: /imgsfancy|imgsloadfancy|imagefancy|imgsload.*fancy/i, exportName: 'ImageLoader', type: 'js' },
-    
-    // 灯箱
     { pattern: /^fancybox/i, exportName: 'Fancybox', type: 'both' },
-    
-    // Panel 库
     { pattern: /^jspanel/i, exportName: 'jsPanel', type: 'js' },
-    
-    // 前端框架
     { pattern: /^vue/i, exportName: 'Vue', type: 'js' },
     { pattern: /^react/i, exportName: 'React', type: 'js' },
-    
-    // 时间库
     { pattern: /^moment/i, exportName: 'moment', type: 'js' },
     { pattern: /^dayjs/i, exportName: 'dayjs', type: 'js' },
-    
-    // Live2D
     { pattern: /^live2d/i, exportName: 'L2Dwidget', type: 'js' },
-    
-    // 字体图标
     { pattern: /fontawesome/i, type: 'css' },
-    
-    // CSS 文件
     { pattern: /\.css$/i, type: 'css' },
 ];
 
@@ -74,7 +44,7 @@ function _extractLibInfo(url) {
     try {
         const fileName = url.split('/').pop().split('?')[0];
         const libName = fileName
-            .replace(/\.(min|umd|esm|pkgd)\.js$/i, '')
+            .replace(/\.(min|umd|esm|pkgd|mjs)\.js$/i, '')
             .replace(/\.min\.css$/i, '')
             .replace(/\.(js|css)$/i, '')
             .toLowerCase();
@@ -91,7 +61,7 @@ function _generateObjectKey(url) {
         const isCSS = fileName.match(/\.css$/i);
         
         let libName = fileName
-            .replace(/\.(min|umd|esm|pkgd)?\.(js|css)$/i, '')
+            .replace(/\.(min|umd|esm|pkgd|mjs)?\.(js|css)$/i, '')
             .replace(/[.-]/g, '_')
             .toLowerCase();
         
@@ -109,14 +79,10 @@ function _findExportRule(url) {
     const { fileName, libName } = _extractLibInfo(url);
     
     for (const rule of LIBRARY_RULES) {
-        let matched = false;
-        
         if (rule.pattern instanceof RegExp) {
-            matched = rule.pattern.test(fileName) || rule.pattern.test(libName);
-        }
-        
-        if (matched) {
-            return rule;
+            if (rule.pattern.test(fileName) || rule.pattern.test(libName)) {
+                return rule;
+            }
         }
     }
     
@@ -170,21 +136,79 @@ function _extractSourceLabel(url) {
 }
 
 /**
- * 检测库格式
+ * ✨ 两段式格式检测 v0.30
  * 
- * 返回值：
- * - 'umd': 包含 .umd. 或 .pkgd. 标记 → 使用 <script> 加载
- * - 'esm': 其他情况 → 优先用 import()，失败降级 <script>
+ * 第一段：特征检测（100% 确定）
+ *   - .umd. / .pkgd. → 'umd'
+ *   - .esm. / .mjs → 'esm'
+ *   - 否则 → 'unknown'（进入动态检测）
+ * 
+ * 返回对象：
+ *   {
+ *     staticType: 'umd' | 'esm' | 'unknown',  // 静态检测结果
+ *     needsDynamicCheck: boolean               // 是否需要动态检测
+ *   }
  */
 function _detectLibraryFormat(url) {
-    if (url.includes('umd') || url.includes('.umd.') ||
-        url.includes('pkgd') || url.includes('.pkgd.')) {
-        return 'umd';
+    // 第一段：特征检测
+    if (url.includes('.umd.') || url.includes('.umd/') ||
+        url.includes('.pkgd.') || url.includes('.pkgd/')) {
+        return {
+            staticType: 'umd',
+            needsDynamicCheck: false
+        };
     }
-    return 'esm';
+    
+    if (url.includes('.esm.') || url.includes('.esm/') ||
+        url.includes('.mjs') || url.includes('/esm/')) {
+        return {
+            staticType: 'esm',
+            needsDynamicCheck: false
+        };
+    }
+    
+    // 第二段：无特征，需要动态检测
+    return {
+        staticType: 'unknown',
+        needsDynamicCheck: true
+    };
 }
 
-// ==================== 输入规范化 ====================
+/**
+ * ✨ 检测 import() 返回值是否有意义
+ * 
+ * 用途：区分"真正的 ESM"和"IIFE 伪成功"
+ * 
+ * 返回 true：模块有实际内容
+ *   - {default: Function/Object/...}（不是空对象）
+ *   - {namedExport1: ..., namedExport2: ...}
+ * 
+ * 返回 false：模块内容为空（IIFE 伪成功）
+ *   - {}（完全空）
+ *   - {default: undefined}
+ */
+function _isModuleContentful(module, exportName) {
+    if (!module || typeof module !== 'object') {
+        return false;
+    }
+    
+    // 检查命名导出
+    if (exportName) {
+        const named = module[exportName];
+        if (named !== undefined && named !== null) {
+            return true;
+        }
+    }
+    
+    // 检查默认导出
+    if (module.default !== undefined && module.default !== null) {
+        return true;
+    }
+    
+    // 检查是否有其他导出
+    const keys = Object.keys(module);
+    return keys.length > 0 && !(keys.length === 1 && !module.default);
+}
 
 function _normalizeInputs(inputs) {
     let urlList = [];
@@ -270,10 +294,10 @@ function _normalizeInputs(inputs) {
 // ==================== 加载函数 ====================
 
 /**
- * 加载 ESM 模块（使用 import()）
+ * ✨ ESM 模块加载（import()）
  * 
- * 返回：模块对象或导出值
- * 特点：不会修改 window，返回值需要调用方处理
+ * 返回：完整的模块对象（包含 .default）
+ * 目的：保留 ESM 的原生导出结构
  */
 async function _loadESMModule(
     url,
@@ -289,38 +313,28 @@ async function _loadESMModule(
     
     const module = await import(url);
     
-    // ✅ 查找导出值
-    let exported;
-    
-    if (exportName) {
-        exported = module[exportName] || module.default;
-    } else {
-        exported = module.default || module;
-    }
-    
-    if (exported === undefined) {
-        throw new Error(`No export found in ESM module: ${exportName || 'default'}`);
-    }
-    
+    // ✅ 返回完整模块对象，让调用方自己决定用 .default 还是其他
     if (debug && logger && startTime) {
         const duration = Math.round(performance.now() - startTime);
+        const logMsg = exportName 
+            ? `ESM import() [${exportName}]`
+            : 'ESM import() [default]';
         logger.addTableRow(
             _getFileName(url),
             _extractSourceLabel(url),
             exportName || 'default',
-            'ESM import()',
+            logMsg,
             duration
         );
     }
     
-    return exported;
+    return module;
 }
 
 /**
- * 加载 IIFE 脚本（使用 <script> 标签）
+ * IIFE 脚本加载（<script> 标签）
  * 
- * 返回：全局变量引用（window[exportName]）或 true
- * 特点：脚本执行时自动初始化并挂载到 window
+ * 返回：全局变量或 true
  */
 function _loadIIFEScript(
     url,
@@ -334,7 +348,7 @@ function _loadIIFEScript(
     return new Promise((resolve, reject) => {
         if (debug && logger) {
             logger.log(
-                `  ├─ [IIFE] 使用 <script> 标签加载 (${format.toUpperCase()})...`,
+                `  ├─ [IIFE] 使用 <script> 标签 (${format.toUpperCase()})...`,
                 'log'
             );
         }
@@ -349,12 +363,11 @@ function _loadIIFEScript(
                 let result = true;
                 
                 if (exportName) {
-                    // ✅ 从全局对象读取（脚本自动挂载）
                     result = window[exportName];
                     
                     if (result === undefined) {
                         throw new Error(
-                            `IIFE script loaded but global variable not found: window.${exportName}`
+                            `IIFE loaded but window.${exportName} is undefined`
                         );
                     }
                 }
@@ -387,14 +400,17 @@ function _loadIIFEScript(
 }
 
 /**
- * 加载 JS 脚本（路由分发）
+ * ✨ 智能 JS 加载器（v0.30）
  * 
- * 策略：
- * 1. 检查 DOM 是否已存在（避免重复加载）
- * 2. 根据格式选择加载方式：
- *    - UMD 标记 → 直接用 <script>
- *    - forceTag=true → 强制用 <script>
- *    - 否则 → 优先尝试 ESM import()，失败降级 <script>
+ * 流程：
+ * 1. 检查缓存（已加载过的脚本）
+ * 2. 格式检测：
+ *    - UMD 标记 → 直接 <script>
+ *    - ESM 标记 → 直接 import()
+ *    - 无标记 → 尝试 import()，检查结果：
+ *      - 有内容 → 返回（成功的 ESM）
+ *      - 空对象 → 降级 <script>（IIFE 伪成功）
+ *      - 真失败 → 报错
  */
 async function _loadJS(
     url,
@@ -409,33 +425,32 @@ async function _loadJS(
         logger.log(`加载 JS: ${_getFileName(url)}`, 'log');
     }
     
-    // ✅ 检查重复
     const existing = document.querySelector(`script[data-lib-id="${domId}"]`);
     if (existing) {
         if (debug && logger) {
-            logger.log(`  └─ [缓存] 脚本已加载，跳过`, 'log');
+            logger.log(`  └─ [缓存] 已加载，跳过`, 'log');
         }
         return exportName ? window[exportName] : true;
     }
     
-    const format = _detectLibraryFormat(url);
+    const { staticType, needsDynamicCheck } = _detectLibraryFormat(url);
     
-    // ✅ 如果是 UMD 或强制 script，直接用 <script>
-    if (format === 'umd' || forceTag) {
+    // ✅ 情况1：静态检测确定是 UMD 或强制 <script>
+    if (staticType === 'umd' || forceTag) {
         return _loadIIFEScript(
             url,
             domId,
             exportName,
-            format,
+            staticType,
             debug,
             logger,
             startTime
         );
     }
     
-    // ✅ 否则优先尝试 ESM import()
-    try {
-        return await _loadESMModule(
+    // ✅ 情况2：静态检测确定是 ESM
+    if (staticType === 'esm' && !forceTag) {
+        return _loadESMModule(
             url,
             domId,
             exportName,
@@ -443,31 +458,78 @@ async function _loadJS(
             logger,
             startTime
         );
-    } catch (e) {
-        // ESM import() 失败 → 降级到 <script>
-        if (debug && logger) {
-            logger.log(
-                `  ├─ ⚠️ ESM import() 失败: ${e.message}`,
-                'warn'
+    }
+    
+    // ✅ 情况3：需要动态检测（无特征库）
+    if (needsDynamicCheck) {
+        try {
+            if (debug && logger) {
+                logger.log(`  ├─ [动态检测] 尝试 import()...`, 'log');
+            }
+            
+            const module = await import(url);
+            
+            // ✨ 关键判断：检查模块是否有实际内容
+            if (_isModuleContentful(module, exportName)) {
+                if (debug && logger) {
+                    logger.log(`  ├─ [动态检测] 确认为 ESM（有内容）`, 'success');
+                }
+                
+                if (debug && logger && startTime) {
+                    const duration = Math.round(performance.now() - startTime);
+                    logger.addTableRow(
+                        _getFileName(url),
+                        _extractSourceLabel(url),
+                        exportName || 'default',
+                        'ESM import()',
+                        duration
+                    );
+                }
+                
+                return module;
+            } else {
+                // IIFE 伪成功：import() 返回空对象
+                if (debug && logger) {
+                    logger.log(
+                        `  ├─ [动态检测] 检测到 IIFE 伪成功（空模块），降级 <script>`,
+                        'warn'
+                    );
+                }
+                
+                return _loadIIFEScript(
+                    url,
+                    domId,
+                    exportName,
+                    'iife',
+                    debug,
+                    logger,
+                    startTime
+                );
+            }
+            
+        } catch (e) {
+            // import() 真正失败：网络错误、语法错误等
+            if (debug && logger) {
+                logger.log(
+                    `  ├─ [动态检测] import() 失败（可能是 IIFE）: ${e.message}`,
+                    'warn'
+                );
+                logger.log(`  └─ 降级 <script> 标签加载`, 'log');
+            }
+            
+            return _loadIIFEScript(
+                url,
+                domId,
+                exportName,
+                'iife',
+                debug,
+                logger,
+                startTime
             );
-            logger.log(`  └─ 自动降级到 <script> 标签加载`, 'log');
         }
-        
-        return _loadIIFEScript(
-            url,
-            domId,
-            exportName,
-            'iife',  // 降级后标记为 IIFE
-            debug,
-            logger,
-            startTime
-        );
     }
 }
 
-/**
- * 加载 CSS 样式表
- */
 async function _loadCSS(
     url,
     domId,
@@ -482,7 +544,7 @@ async function _loadCSS(
     if (document.getElementById(domId) ||
         document.querySelector(`link[href="${url}"]`)) {
         if (debug && logger) {
-            logger.log(`  └─ [缓存] 样式表已加载，跳过`, 'log');
+            logger.log(`  └─ [缓存] 已加载，跳过`, 'log');
         }
         return true;
     }
@@ -517,19 +579,6 @@ async function _loadCSS(
 
 // ==================== 主函数 ====================
 
-/**
- * 动态库加载器主函数
- * 
- * @param {string|string[]|object[]} inputs 输入数据
- * @param {object} options 选项
- *   - callback: 完成回调
- *   - forceTag: 强制 <script> 标签
- *   - forceGlobal: 强制挂载到 window（仅 exportName）
- *   - mountTarget: 挂载目标对象
- *   - debug: 启用调试
- * 
- * @returns {Promise<object>} 结果对象 {objectKey: module/lib}
- */
 export async function referLibrary(inputs, {
     callback,
     forceTag = false,
@@ -556,7 +605,6 @@ export async function referLibrary(inputs, {
     
     const resultObject = {};
     
-    // 并行加载所有任务
     const loadPromises = tasks.map(async (task) => {
         const { url, domId, objectKey, exportName, isCSS } = task;
         const startTime = performance.now();
@@ -604,22 +652,16 @@ export async function referLibrary(inputs, {
         );
     }
     
-    // ✨ v0.29 关键修复：正确处理 mountTarget 挂载
+    // ✨ mountTarget 挂载
     if (mountTarget && typeof mountTarget === 'object') {
         results.forEach(({ task, result, success }) => {
-            const { objectKey, exportName, isCSS } = task;
+            const { objectKey, isCSS } = task;
             
             if (!success || !result || isCSS) {
-                return;  // 失败、空值、CSS 都不挂载
+                return;
             }
             
-            // ✅ 区分挂载内容：
-            // - 如果 result 是从全局变量读取的（exportName 对应 window[exportName]）
-            //   → 直接挂载 result（已经是正确的库实例）
-            // - 如果 result 是 ESM 模块对象
-            //   → 挂载导出值或整个模块
-            
-            let toMount = result;
+            mountTarget[objectKey] = result;
             
             if (debug && logger) {
                 const resultType = Array.isArray(result) ? 'Array' :
@@ -634,12 +676,9 @@ export async function referLibrary(inputs, {
                     'log'
                 );
             }
-            
-            mountTarget[objectKey] = toMount;
         });
     }
     
-    // 可选挂载到 window
     if (forceGlobal) {
         results.forEach(({ task, result, success }) => {
             const { objectKey, exportName, isCSS } = task;
