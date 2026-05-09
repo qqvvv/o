@@ -7,7 +7,6 @@
  * ✅ 数据格式统一为数组（支持查询参数）
  * ✅ 不兼容旧对象格式（便于未来文本数据适配）
  * ✅ CSS 加载简化（仅用 link，不需导出名）
- * ✨ 新增 globalLess 参数（UMD/Global 库隔离）
  */
 
 import { DebugLogger } from './debug-logger.js';
@@ -308,34 +307,6 @@ function _normalizeInputs(inputs) {
     return tasks;
 }
 
-/**
- * 清理全局污染
- * @param {string} exportName - 要清理的全局变量名
- * @param {string} domId - script 标签的 data-lib-id
- * @param {boolean} debug - 是否输出调试信息
- * @param {DebugLogger} logger - 调试器实例
- */
-function _cleanupGlobal(exportName, domId, debug = false, logger = null) {
-  if (!exportName) return;
-  
-  // 删除全局变量
-  if (window[exportName] !== undefined) {
-    delete window[exportName];
-    if (debug && logger) {
-      logger.log(`  🗑️ 已删除全局变量: window.${exportName}`, 'log');
-    }
-  }
-  
-  // 删除 script 标签
-  const script = document.querySelector(`script[data-lib-id="${domId}"]`);
-  if (script) {
-    script.remove();
-    if (debug && logger) {
-      logger.log(`  🗑️ 已删除 <script> 标签: ${domId}`, 'log');
-    }
-  }
-}
-
 // ==================== 加载函数 ====================
 
 /**
@@ -367,14 +338,12 @@ function _extractFromGlobal(exportName, debug = false, logger = null) {
  * - import() 失败 → 自动降级到 <script> 标签
  * - forceTag=true → 跳过 import，直接用 <script>
  * - UMD 格式 → 直接用 <script>（避免浪费尝试）
- * @param {boolean} globalLess - 是否隔离全局挂载
  */
 async function _loadJS(
     url,
     domId,
     exportName,
     forceTag,
-    globalLess = false,  // ✨ 新参数
     debug = false,
     logger = null,
     startTime = null
@@ -388,7 +357,7 @@ async function _loadJS(
         if (debug && logger) {
             logger.log(`  [已存在] 跳过`, 'log');
         }
-        return exportName ? window[exportName] : true;
+        return window[exportName] || true;
     }
     const format = _detectLibraryFormat(url);
     // ✅ 策略1：非 UMD 且非强制 script 标签 → 优先尝试 import()
@@ -397,12 +366,27 @@ async function _loadJS(
             if (debug && logger) {
                 logger.log(`  → 尝试 ESM import()`, 'log');
             }
+
             const module = await import(url);
-            if (exportName) {
-                const exported = module[exportName] || module.default || module;
-                // ✨ ESM 不污染全局，所以不需要 globalLess 处理
-                window[exportName] = exported;
+
+            // ✨ 关键改进：检查 import() 是否实际初始化了库
+            if (exportName && window[exportName] !== undefined) {
+                if (debug && logger) {
+                    return window[exportName]
+                }
             }
+
+            // 检查返回的模块是否有内容
+            const exported = module[exportName] || module.default || module;
+            if (exported && Object.keys(exported).length > 0) {
+                if (debug && logger) {
+                    logger.log(`  ✓ ESM export 成功`, 'success');
+                }
+                return exported;
+            }
+            // ⚠️ import() 虽然没报错，但库没有被正确初始化
+            // 这说明库是 IIFE 类型，需要用 <script> 标签
+            throw new Error('Library not properly initialized by import()');
             if (debug && logger && startTime) {
                 const duration = Math.round(performance.now() - startTime);
                 logger.addTableRow(
@@ -413,21 +397,20 @@ async function _loadJS(
                     duration
                 );
             }
-            return module;
+            //return module;
         } catch (e) {
             // import 失败 → 降级到 <script> 标签
             if (debug && logger) {
-                logger.log(`  ⚠️ ESM import 失败: ${e.message}`, 'warn');
-                logger.log(`  → 降级到 <script> 标签加载`, 'log');
+                logger.log(`  ⚠️ import() 加载失败或库未初始化: ${e.message}`, 'warn');
+                logger.log(`  → 自动降级到 <script> 标签加载`, 'log');
             }
             
-            // 继续执行下面的 <script> 标签逻辑
+            // 自动降级继续执行下面的 <script> 标签逻辑
             return _loadViaScript(
                 url,
                 domId,
                 exportName,
-                'umd',  // 降级后认为是 UMD
-                globalLess,  // ✨ 传递 globalLess 参数
+                'umd（iife）',  // 降级后认为是 UMD标记为 IIFE 类型
                 debug,
                 logger,
                 startTime
@@ -435,25 +418,17 @@ async function _loadJS(
         }
     }
     // ✅ 策略2：UMD 格式或 forceTag=true → 直接用 <script> 标签
-    return _loadViaScript(url,
-        domId,
-        exportName,
-        'umd',  // 降级后认为是 UMD
-        globalLess,  // ✨ 传递 globalLess 参数
-        debug,
-        logger,
-        startTime);
+    return _loadViaScript(url, domId, exportName, format, debug, logger, startTime);
 }
+
 /**
  * 通过 <script> 标签加载（提取为单独函数，便于复用）
  */
-
 function _loadViaScript(
     url,
     domId,
     exportName,
     format,
-    globalLess = false,  // ✨ 新参数
     debug = false,
     logger = null,
     startTime = null
@@ -467,23 +442,16 @@ function _loadViaScript(
             try {
                 let result = true;
                 if (exportName) {
-                    // ✨ ESM 不污染全局，所以不需要 globalLess 处理
                     const exported = _extractFromGlobal(exportName, debug, logger);
                     result = exported || window[exportName] || true;
-
-                    // ✨ 如果启用 globalLess，清理全局污染
-                    if (globalLess && exported) {
-                        _cleanupGlobal(exportName, domId, debug, logger);
-                    }
                 }
                 if (debug && logger && startTime) {
                     const duration = Math.round(performance.now() - startTime);
-                    const mode = globalLess ? `${format}(isolated)` : format;// ✨ 
                     logger.addTableRow(
                         _getFileName(url),
                         _extractSourceLabel(url),
                         exportName || '-',
-                        mode === 'umd' ? 'UMD' : 'Global',
+                        format === 'umd' ? 'UMD' : 'Global',
                         duration
                     );
                 }
@@ -571,7 +539,6 @@ async function _loadCSS(
  *   - forceTag: 强制使用 <script> 标签（跳过 ESM import）
  *   - forceGlobal: 强制挂载到 window（默认 false，只挂载到返回对象）
  *   - mountTarget: 挂载目标对象（如 behaviours），默认 null
- *   - globalLess: 隔离 UMD/Global 库，不污染 window（默认 false）
  *   - debug: 启用调试日志
  * 
  * @returns {Promise<object>} 加载结果对象（key: fileName, value: module）
@@ -581,7 +548,6 @@ export async function referLibrary(inputs, {
     forceTag = false,
     forceGlobal = false,  // ✨ 新参数
     mountTarget = null,      // ✨ 新参数：挂载目标对象
-    globalLess = false,  // ✨ 新参数：隔离全局挂载
     debug = false
 } = {}) {
 
@@ -600,7 +566,6 @@ export async function referLibrary(inputs, {
     const tasks = _normalizeInputs(inputs);
 
     if (debug && logger) {
-        const mode = globalLess ? '(globalLess 模式)' : '';
         logger.log(`📦 开始加载 ${tasks.length} 个任务`, 'log');
     }
 
@@ -620,7 +585,6 @@ export async function referLibrary(inputs, {
                     domId,
                     exportName,
                     forceTag,
-                    globalLess,  // ✨ 传递 globalLess 参数
                     debug,
                     logger,
                     startTime
@@ -658,19 +622,14 @@ export async function referLibrary(inputs, {
                 mountTarget[objectKey] = toMount;
                 
                 if (debug && logger) {
-                    const targetName = mountTarget.constructor.name;
-                    logger.log(
-                        `  → 已挂载到 ${targetName}.${objectKey}` +
-                        (globalLess ? ' (已隔离全局污染)' : ''),
-                        'log'
-                    );
+                    logger.log(`  → 已挂载到 ${mountTarget.constructor.name}.${objectKey}`, 'log');
                 }
             }
         });
     }
 
     // ✨ 新增：可选挂载到 window（由 forceGlobal 控制）
-    if (forceGlobal && !globalLess) {  // globalLess 优先级更高
+    if (forceGlobal) {
         tasks.forEach(task => {
             const { objectKey, exportName, isCSS } = task;
             const moduleOrLib = resultObject[objectKey];
