@@ -357,7 +357,7 @@ async function _loadJS(
         if (debug && logger) {
             logger.log(`  [已存在] 跳过`, 'log');
         }
-        return window[exportName] || true;
+        return exportName ? window[exportName] : true;
     }
     const format = _detectLibraryFormat(url);
     // ✅ 策略1：非 UMD 且非强制 script 标签 → 优先尝试 import()
@@ -366,40 +366,36 @@ async function _loadJS(
             if (debug && logger) {
                 logger.log(`  → 尝试 ESM import()`, 'log');
             }
-
             const module = await import(url);
-
-            // ✨ 关键改进：检查 import() 是否实际初始化了库
-            if (exportName && window[exportName] !== undefined) {
-                if (debug && logger) {
-                    logger.log(`  ✓ IIFE 自挂载成功: window.${exportName}`, 'success');
-                }
-                return window[exportName];
+            // ❌ 删除这一段：
+            // if (exportName) {
+            //     const exported = module[exportName] || module.default || module;
+            //     window[exportName] = exported;
+            // }
+            if (debug && logger && startTime) {
+                const duration = Math.round(performance.now() - startTime);
+                logger.addTableRow(
+                    _getFileName(url),
+                    _extractSourceLabel(url),
+                    exportName || '-',
+                    'ESM',
+                    duration
+                );
             }
-
-            // 检查返回的模块是否有内容
-            const exported = module[exportName] || module.default || module;
-            if (exported && Object.keys(exported).length > 0) {
-                if (debug && logger) {
-                    logger.log(`  ✓ ESM export 成功`, 'success');
-                }
-                return exported;
-            }
-            // ⚠️ import() 虽然没报错，但库没有被正确初始化
-            // 这说明库是 IIFE 类型，需要用 <script> 标签
+            return module;
         } catch (e) {
             // import 失败 → 降级到 <script> 标签
             if (debug && logger) {
-                logger.log(`  ⚠️ import() 加载失败或库未初始化: ${e.message}`, 'warn');
-                logger.log(`  → 自动降级到 <script> 标签加载`, 'log');
+                logger.log(`  ⚠️ ESM import 失败: ${e.message}`, 'warn');
+                logger.log(`  → 降级到 <script> 标签加载`, 'log');
             }
             
-            // 自动降级继续执行下面的 <script> 标签逻辑
+            // 继续执行下面的 <script> 标签逻辑
             return _loadViaScript(
                 url,
                 domId,
                 exportName,
-                'umd（iife）',  // 降级后认为是 UMD标记为 IIFE 类型
+                'umd',  // 降级后认为是 UMD
                 debug,
                 logger,
                 startTime
@@ -409,7 +405,6 @@ async function _loadJS(
     // ✅ 策略2：UMD 格式或 forceTag=true → 直接用 <script> 标签
     return _loadViaScript(url, domId, exportName, format, debug, logger, startTime);
 }
-
 /**
  * 通过 <script> 标签加载（提取为单独函数，便于复用）
  */
@@ -427,43 +422,33 @@ function _loadViaScript(
         script.src = url;
         script.setAttribute('data-lib-id', domId);
         script.setAttribute('data-loader', 'referLibrary');
-        
         script.onload = async () => {
             try {
                 let result = true;
-
                 if (exportName) {
-                    // ✨ 直接从 window 获取（IIFE 已自动挂载）
-                    result =  window[exportName];
-
-                    if (result === undefined) {
-                        throw new Error(`Library ${exportName} not found in window`);
-                    }
+                    const exported = _extractFromGlobal(exportName, debug, logger);
+                    result = exported || window[exportName] || true;
                 }
-
                 if (debug && logger && startTime) {
                     const duration = Math.round(performance.now() - startTime);
                     logger.addTableRow(
                         _getFileName(url),
                         _extractSourceLabel(url),
                         exportName || '-',
-                        format === 'umd' ? 'UMD' : 'Global（IIFE）',
+                        format === 'umd' ? 'UMD' : 'Global',
                         duration
                     );
                 }
-
                 resolve(result);
             } catch (err) {
                 console.error(`脚本处理错误: ${err.message}`);
                 reject(err);
             }
         };
-
         script.onerror = () => {
             const error = new Error(`Failed to load: ${url}`);
             reject(error);
         };
-        
         document.head.appendChild(script);
     });
 }
