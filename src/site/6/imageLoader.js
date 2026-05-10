@@ -52,7 +52,7 @@ export const ImageLoader = (() => {
       img.src = url;
 
       // ✅ Fancybox 交互（防守式）改进的
-      if (typeof Fancybox !== "undefined" && Fancybox) {
+      if (FancyboxLib) {
         img.addEventListener("click", (event) => {
           try {
             const elem = event.target.closest("li:has(img)");
@@ -62,7 +62,7 @@ export const ImageLoader = (() => {
             const idxOfCall = Array.from(imageContainer.children).indexOf(elem);
 
             // 🔑 调用 Fancybox（支持两种来源）
-            Fancybox.show(gallery_items, {
+            FancyboxLib.show(gallery_items, {
               slug: "gallery",
               startIndex: idxOfCall,
             });
