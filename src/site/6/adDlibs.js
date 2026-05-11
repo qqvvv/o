@@ -1,5 +1,5 @@
 /**
- * 改进的动态库加载器 v0.30
+ * 改进的动态库加载器 v0.31
  * 
  * 核心改进：
  * ✅ 两段式格式检测（特征检测 + 动态检测）
@@ -191,6 +191,11 @@ function _isModuleContentful(module, exportName) {
     if (!module || typeof module !== 'object') {
         return false;
     }
+
+    // 检查默认导出
+    if (module.default !== undefined && module.default !== null) {
+        return true;
+    }
     
     // 检查命名导出
     if (exportName) {
@@ -199,12 +204,7 @@ function _isModuleContentful(module, exportName) {
             return true;
         }
     }
-    
-    // 检查默认导出
-    if (module.default !== undefined && module.default !== null) {
-        return true;
-    }
-    
+
     // 检查是否有其他导出
     const keys = Object.keys(module);
     return keys.length > 0 && !(keys.length === 1 && !module.default);

@@ -23,13 +23,31 @@
     - attachPanel #?<comment= #YggdrAML
     `;
 
-    const imageUrls = [
-      "https://s2.loli.net/2023/03/01/dYQMrXeK8GVihP3.jpg",
-      "https://i.ibb.co/xSt0Rdk/95433208113.jpg",
-      "https://i.postimg.cc/ppCsnWdr/Windows-booting.png",
-      "https://i.loli.net/2018/05/08/5af11396cf460.gif",
-      "https://gcore.jsdelivr.net/gh/6cc/c/m/y/19/97.jpg",
+    const folderPath = "https://gcore.jsdelivr.net/gh/6cc/c/p/j/";
+
+    const fileNames = [
+      "mmexport1756210129175.jpg",
+      "mmexport1756210136134.jpg",
+      "mmexport1756210140711.jpg",
+      "mmexport1756210208094.jpg",
+      "mmexport1778395329236.jpg",
+      "mmexport1778401748418.jpg",
+      "mmexport1778401761154.jpg",
+      "mmexport1778402184909.jpg",
+      "mmexport1778402196829.jpg",
+      "mmexport1778402242718-rl.jpg",
+      "mmexport1778402255773-rl.jpg",
+      "mmexport1778402301501-rl.jpg",
     ];
+
+    function generateUrls(folderPath, fileNames) {
+      // ✅ 确保 folderPath 以 '/' 结尾
+      const normalizedPath = folderPath.endsWith('/') ? folderPath : folderPath + '/';
+
+      // ✅ 用 map 生成 URLs 数组
+      return fileNames.map(fileName => normalizedPath + fileName);
+    };
+    const imageUrls = generateUrls(folderPath, fileNames);
 
     const behaviours = {
       syncPlay: async () => {
