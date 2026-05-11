@@ -65,7 +65,7 @@
 
         // ✨ 调用 ImageLoader 接口
         const imageContainer = behaviours.imageloader_js.ImageLoader.create(imageUrls, {
-          imagesLoaded: behaviours.imagesloaded_mjs.default,
+          imagesLoaded: behaviours["imagesloaded@5_0_0"].default,
           Fancybox: behaviours.fancybox_esm.Fancybox,
         });
 
@@ -97,7 +97,7 @@
           "tagMode":true,
           "debug":true,
           "model":{
-            "jsonPath":"https://unpkg.com/live2d-widget-model-mashiro-seifuku@1.0.1/assets/shifuku.model.json"},
+            "jsonPath":"https://unpkg.com/live2d-widget-model-mashiro-seifuku@1.0.1/assets/seifuku.model.json"},
             "display":{
               "position":"right",
               "width":420,

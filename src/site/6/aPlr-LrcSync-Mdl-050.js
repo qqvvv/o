@@ -1,6 +1,6 @@
-import { APlayer } from 'https://esm.sh/aplayer@1.10.1';
-
 export default async function initPlayer({ mount, lyricsMount, mdText }) {
+  // ✅ 在需要时动态导入
+  const { default: APlayer } = await import('https://esm.sh/aplayer@1.10.1');
   const { audioList, autoplay } = parseMdonLite(mdText);
 
   mount.innerHTML = "";
