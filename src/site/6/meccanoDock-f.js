@@ -1,8 +1,11 @@
+/**
+ * meccanoDock v0.3.5.11
+ */
 (() => {
   'use strict';
 
   const method = async () => {
-    const core = "https://rra.pages.dev/6/adDlibs-f1.js";
+    const core = "https://rra.pages.dev/6/adDlibs.js";
 
     const libs = [
       "https://rra.pages.dev/6/vectorMenu/menuUI.css",
@@ -32,7 +35,6 @@
       syncPlay: async () => {
         const aplayerLrc = [
           "https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.css",
-          "https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.js",
           "https://rra.pages.dev/6/aPlr-LrcSync-050.js?exportName=initModule",
         ];
 
@@ -52,8 +54,8 @@
           "https://rra.pages.dev/6/imageLoader.js?exportName=ImageLoader",
           "https://gcore.jsdelivr.net/gh/Flyer53/jsPanel4/es6module/jspanel.min.css",
           "https://gcore.jsdelivr.net/gh/Flyer53/jsPanel4/es6module/jspanel.min.js",
-          "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/6.0.33/fancybox/fancybox.min.css",
-          "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/6.0.33/fancybox/fancybox.umd.min.js",
+          "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.min.css",
+          "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.esm.min.js",
         ];
 
         // ✨ 自动挂载到 behaviours
@@ -63,7 +65,8 @@
 
         // ✨ 调用 ImageLoader 接口
         const imageContainer = behaviours.imageloader_js.ImageLoader.create(imageUrls, {
-          imagesLoaded: behaviours["imagesloaded@5_0_0"].default,
+          imagesLoaded: behaviours.imagesloaded_mjs.default,
+          Fancybox: behaviours.fancybox_esm.Fancybox,
         });
 
         // 现在可以直接调用挂载的函数
@@ -78,21 +81,35 @@
       '层二折叠1': () => console.log('执行: 层二折叠1'),
       '层三功能1': () => console.log('执行: 层三功能1'),
       '层三功能2': () => console.log('执行: 层三功能2'),
-      '层二功能1': () => console.log('执行: 层二功能1'),
-      '层一功能1': () => console.log('执行: 层一功能1'),
       '层二功能1': async () => {
-        const aplayerLrc = [
+        const live2d = [
           "https://unpkg.com/live2d-widget@3.1.4/lib/L2Dwidget.min.js",
         ];
 
-        await behaviours.refer(aplayerLrc, {
+        await behaviours.refer(live2d, {
           mountTarget: behaviours,  // this 指向 behaviours
-          debug: true,
         });
         
-        L2Dwidget.init();
-      },
-    };
+        L2Dwidget.init({
+          "pluginRootPath":"live2dw/",
+          "pluginJsPath":"lib/",
+          "pluginModelPath":"assets/",
+          "tagMode":true,
+          "debug":true,
+          "model":{
+            "jsonPath":"https://unpkg.com/live2d-widget-model-mashiro-seifuku@1.0.1/assets/shifuku.model.json"},
+            "display":{
+              "position":"right",
+              "width":420,
+              "height":840,
+              "hOffset":0,
+              "vOffset":0
+            },
+          "mobile":{"show":true},
+          "react":{"opacity":0.8},
+          "log":true});
+        },
+      };
     try {
       const refer = await import(core);
 
@@ -103,7 +120,7 @@
       behaviours.refer = refer.default;
 
       // 创建命令执行器✨ 现在可以直接访问（已自动挂载）
-      const executor = new behaviours.commandexecutor_js.CommandExecutor({ 
+      const executor = new behaviours.commandexecutor_js.CommandExecutor({
         globalScope: behaviours,
         debug: true,
       });

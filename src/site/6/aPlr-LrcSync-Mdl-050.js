@@ -1,3 +1,5 @@
+import { APlayer } from 'https://esm.sh/aplayer@1.10.1';
+
 export default async function initPlayer({ mount, lyricsMount, mdText }) {
   const { audioList, autoplay } = parseMdonLite(mdText);
 
