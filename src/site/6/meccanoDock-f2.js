@@ -136,21 +136,6 @@
         const arrSrcs = allImages.map(img => trimQueryPara(img.src));
         return arrSrcs;
     };
-    /**
-     * msnBehaviour
-     */
-    const msnBehaviour = async () => {
-        const urls = await getImageUrls();
-        
-        if (urls.length > 0) {
-            console.log(`✅ 成功获取 ${urls.length} 张图片`);
-            console.info(urls);
-        } else {
-            console.log(`⚠️  未找到任何图片`);
-        }
-        
-        return urls;
-    };
 
     /**
      * 域名配置
@@ -168,7 +153,7 @@
                 // referrer 优先，其次当前 URL
                 return (referrer && pattern.test(referrer)) || pattern.test(dest);
             },
-            action: () => msnBehaviour(),
+            action: () => behaviours.attachPanel(),
         },
     ];
 
@@ -195,12 +180,10 @@
         ];
 
         // ✨ 自动挂载到 behaviours
-        await behaviours.refer(aplayerLrc, {
-          mountTarget: behaviours,  // this 指向 behaviours
-        });
-
+        const aplay = await behaviours.refer(aplayerLrc);
         // 现在可以直接调用挂载的函数
-        behaviours.aplr_lrcsync_050_js.initModule?.();  // initModule 已挂载
+        const initModule = aplay.aplr_lrcsync_050_js.initModule;  // initModule 已挂载
+        initModule();
       },
 
       attachPanel: async () => {
@@ -215,18 +198,18 @@
         ];
 
         // ✨ 自动挂载到 behaviours
-        await behaviours.refer(jsPanel4, {
-          mountTarget: behaviours,  // this 指向 behaviours
-        });
+        const panel = await behaviours.refer(jsPanel4);
+        const jsPanel = panel.jspanel.jsPanel;
 
+        const urls = await getImageUrls();
         // ✨ 调用 ImageLoader 接口
-        const imageContainer = behaviours.imageloader_js.ImageLoader.create(imageUrls, {
-          imagesLoaded: behaviours["imagesloaded@5_0_0"].default,
-          Fancybox: behaviours.fancybox_esm.Fancybox,
+        const imageContainer = panel.imageloader_js.ImageLoader.create(urls, {
+          imagesLoaded: panel.imagesloaded_mjs.default,
+          Fancybox: panel.fancybox_esm.Fancybox,
         });
 
         // 现在可以直接调用挂载的函数
-        behaviours.jspanel.jsPanel?.create({
+        jsPanel?.create({
           callback: (panel) => {
             const contentDiv = panel.querySelector(".jsPanel-content");
             contentDiv?.appendChild(imageContainer);
