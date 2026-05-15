@@ -1,13 +1,11 @@
 /**
- * meccanoDock v0.3.5.14
+ * meccanoDock v0.3.5.15
  */
 (() => {
   'use strict';
 
   const method = async () => {
-    const core = "https://rra.pages.dev/6/adDlibs.js";
-
-    const libs = [
+    const menu = [
       "https://rra.pages.dev/6/vectorMenu/menuUI.css",
       "https://rra.pages.dev/6/vectorMenu/menuUI.js?exportName=initializeApp",
       "https://rra.pages.dev/6/vectorMenu/commandExecutor.js?exportName=CommandExecutor",
@@ -31,7 +29,82 @@
       "https://gcore.jsdelivr.net/gh/6cc/c/m/y/19/97.jpg",
     ];
 
-    const SCRIPT_START_TIME = performance.now();
+    const refer = new Object();
+    const behaviours = {
+      syncPlay: async () => {
+        const aplayerLrc = [
+          "https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.css",
+          "https://rra.pages.dev/6/aPlr-LrcSync-050.js?exportName=initModule",
+        ];
+
+        // ✨ 自动挂载到 behaviours
+        const aplay = await refer.adDlibs(aplayerLrc);
+        // 现在可以直接调用挂载的函数
+        const initModule = aplay.aplr_lrcsync_050_js.initModule;  // initModule 已挂载
+        initModule();
+      },
+
+      attachPanel: async (param) => {
+        const jsPanel4 = [
+          "https://esm.sh/imagesloaded@5.0.0/es2022/imagesloaded.mjs",
+          "https://rra.pages.dev/6/imgload.css",
+          "https://rra.pages.dev/6/imageLoader.js?exportName=ImageLoader",
+          "https://gcore.jsdelivr.net/gh/Flyer53/jsPanel4/es6module/jspanel.min.css",
+          "https://gcore.jsdelivr.net/gh/Flyer53/jsPanel4/es6module/jspanel.min.js",
+          "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.min.css",
+          "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.esm.min.js",
+        ];
+
+        // ✨ 自动挂载到 behaviours
+        const panel = await refer.adDlibs(jsPanel4);
+        const jsPanel = panel.jspanel.jsPanel;
+
+        const urls = param === "msnCn" ? await getImageUrls() : imageUrls;
+        // ✨ 调用 ImageLoader 接口
+        const imageContainer = panel.imageloader_js.ImageLoader.create(urls, {
+          imagesLoaded: panel.imagesloaded_mjs.default,
+          Fancybox: panel.fancybox_esm.Fancybox,
+        });
+
+        // 现在可以直接调用挂载的函数
+        jsPanel?.create({
+          callback: (panel) => {
+            const contentDiv = panel.querySelector(".jsPanel-content");
+            contentDiv?.appendChild(imageContainer);
+          },
+        });
+      },
+
+      '层二折叠1': () => console.log('执行: 层二折叠1'),
+      '层三功能1': () => console.log('执行: 层三功能1'),
+      '层三功能2': () => console.log('执行: 层三功能2'),
+      '层二功能1': async () => {
+        const live2d = await refer.adDlibs(
+          "https://unpkg.com/live2d-widget@3.1.4/lib/L2Dwidget.min.js",
+        );
+
+        L2Dwidget.init({
+          "pluginRootPath":"live2dw/",
+          "pluginJsPath":"lib/",
+          "pluginModelPath":"assets/",
+          "tagMode":true,
+          "debug":true,
+          "model":{
+            "jsonPath":"https://unpkg.com/live2d-widget-model-mashiro-seifuku@1.0.1/assets/seifuku.model.json"},
+            "display":{
+              "position":"right",
+              "width":420,
+              "height":840,
+              "hOffset":0,
+              "vOffset":0
+            },
+          "mobile":{"show":true},
+          "react":{"opacity":0.8},
+          "log":true,
+        });
+      },
+    };
+
     /**
      * 辅助函数 - 深层查询
      */
@@ -109,14 +182,14 @@
         });
     };
 
-    /**
-     * 获取图片地址
-     */
     const trimQueryPara = (urlIn) => {
       const url = new URL(urlIn);
       const urlOut = url.origin + url.pathname;
       return urlOut;
     };
+    /**
+     * 获取图片地址
+     */
     const getImageUrls = async () => {
         const containerResult = await waitForContainer('cp-article');
         
@@ -132,9 +205,8 @@
         if (allImages.length === 0) {
             allImages = querySelectorAllDeep('img.article-image', document);
         }
-
-        const arrSrcs = allImages.map(img => trimQueryPara(img.src));
-        return arrSrcs;
+        
+        return allImages.map(img => trimQueryPara(img.src));
     };
 
     /**
@@ -153,7 +225,7 @@
                 // referrer 优先，其次当前 URL
                 return (referrer && pattern.test(referrer)) || pattern.test(dest);
             },
-            action: () => behaviours.attachPanel(),
+            action: () => behaviours.attachPanel("msnCn"),
         },
     ];
 
@@ -172,101 +244,22 @@
         return "default";
     };
 
-    const behaviours = {
-      syncPlay: async () => {
-        const aplayerLrc = [
-          "https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.css",
-          "https://rra.pages.dev/6/aPlr-LrcSync-050.js?exportName=initModule",
-        ];
-
-        // ✨ 自动挂载到 behaviours
-        const aplay = await behaviours.refer(aplayerLrc);
-        // 现在可以直接调用挂载的函数
-        const initModule = aplay.aplr_lrcsync_050_js.initModule;  // initModule 已挂载
-        initModule();
-      },
-
-      attachPanel: async () => {
-        const jsPanel4 = [
-          "https://esm.sh/imagesloaded@5.0.0/es2022/imagesloaded.mjs",
-          "https://rra.pages.dev/6/imgload.css",
-          "https://rra.pages.dev/6/imageLoader.js?exportName=ImageLoader",
-          "https://gcore.jsdelivr.net/gh/Flyer53/jsPanel4/es6module/jspanel.min.css",
-          "https://gcore.jsdelivr.net/gh/Flyer53/jsPanel4/es6module/jspanel.min.js",
-          "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.min.css",
-          "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.esm.min.js",
-        ];
-
-        // ✨ 自动挂载到 behaviours
-        const panel = await behaviours.refer(jsPanel4);
-        const jsPanel = panel.jspanel.jsPanel;
-
-        const urls = await getImageUrls();
-        // ✨ 调用 ImageLoader 接口
-        const imageContainer = panel.imageloader_js.ImageLoader.create(urls, {
-          imagesLoaded: panel.imagesloaded_mjs.default,
-          Fancybox: panel.fancybox_esm.Fancybox,
-        });
-
-        // 现在可以直接调用挂载的函数
-        jsPanel?.create({
-          callback: (panel) => {
-            const contentDiv = panel.querySelector(".jsPanel-content");
-            contentDiv?.appendChild(imageContainer);
-          },
-        });
-      },
-
-      '层二折叠1': () => console.log('执行: 层二折叠1'),
-      '层三功能1': () => console.log('执行: 层三功能1'),
-      '层三功能2': () => console.log('执行: 层三功能2'),
-      '层二功能1': async () => {
-        const live2d = [
-          "https://unpkg.com/live2d-widget@3.1.4/lib/L2Dwidget.min.js",
-        ];
-
-        await behaviours.refer(live2d, {
-          mountTarget: behaviours,  // this 指向 behaviours
-        });
-        
-        L2Dwidget.init({
-          "pluginRootPath":"live2dw/",
-          "pluginJsPath":"lib/",
-          "pluginModelPath":"assets/",
-          "tagMode":true,
-          "debug":true,
-          "model":{
-            "jsonPath":"https://unpkg.com/live2d-widget-model-mashiro-seifuku@1.0.1/assets/seifuku.model.json"},
-            "display":{
-              "position":"right",
-              "width":420,
-              "height":840,
-              "hOffset":0,
-              "vOffset":0
-            },
-          "mobile":{"show":true},
-          "react":{"opacity":0.8},
-          "log":true});
-        },
-      };
     try {
-      const refer = await import(core);
+      const coreUnit = await import("https://rra.pages.dev/6/adDlibs.js");
+      refer.adDlibs = coreUnit.default;
 
-      // ✨ 初始化时自动挂载到 behaviours
-      const init = await refer.default(libs, { 
-        mountTarget: behaviours,  // ✅ 自动挂载
-      });
-      behaviours.refer = refer.default;
+      // mountTarget: behaviours,✨ 初始化时自动挂载到 behaviours
+      const menuPack = await refer.adDlibs(menu);
 
       // 创建命令执行器✨ 现在可以直接访问（已自动挂载）
-      const executor = new behaviours.commandexecutor_js.CommandExecutor({
+      const executor = new menuPack.commandexecutor_js.CommandExecutor({
         globalScope: behaviours,
         debug: true,
       });
 
       // 使用
       restrictDomain(document.URL);
-      behaviours.menuui_js.initializeApp(yggd, executor);
+      menuPack.menuui_js.initializeApp(yggd, executor);
     } catch (error) {
       console.error("jsPanel initialization failed:", error);
       throw error;
