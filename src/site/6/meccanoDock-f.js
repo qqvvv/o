@@ -237,27 +237,152 @@
             allImages = querySelectorAllDeep('img.article-image', document);
         }
         
-        return allImages.map(img => img.src);
+        return allImages.map(img => trimQueryPara(img.src));
+    };
+
+    /**
+     * 获取分页页码
+     */
+    function getPageCount(html) {
+        const pageMatch = html.match(/共\s*(\d+)\s*页/);
+        if (pageMatch) {
+            return parseInt(pageMatch[1]);
+        }
+        return 1;
+    }
+
+    /**
+     * 从HTML中提取图片地址数组
+     */
+    function extractImageUrls(html) {
+        const jsonMatch = html.match(/let\s+urls\s*=\s*(\[.*?\]);/s);
+        if (jsonMatch) {
+            try {
+                return JSON.parse(jsonMatch[1]);
+            } catch (e) {
+                console.error('JSON解析失败:', e);
+                return [];
+            }
+        }
+        return [];
+    }
+
+    /**
+     * 主函数：获取所有页面的图片
+     */
+    async function getAllImages(baseUrl) {
+      const allImages = [];
+      let pageCount = 1;
+      const span = document.createElement("div");
+      const div = document.createElement("div");
+
+      try {
+            // 第一步：获取初始页面，确定总页数
+            console.log('📖 正在获取初始页面...');
+          span.textContent = "📖 正在获取初始页面...";
+            let html = await fetch(baseUrl).then(r => r.text());
+            pageCount = getPageCount(html);
+            console.log(`✅ 共找到 ${pageCount} 页`);
+          span.textContent = `✅ 共找到 ${pageCount} 页`;
+
+            // 第二步：逐页获取
+            for (let page = 1; page <= pageCount; page++) {
+                // 首页不需要添加 page 参数
+                const url = page === 1
+                    ? baseUrl
+                    : `${baseUrl}&page=${page}`;
+
+                console.log(`📄 正在获取第 ${page}/${pageCount} 页: ${url}`);
+              span.textContent = `📄 正在获取第 ${page}/${pageCount} 页: ${url}`;
+
+                try {
+                    html = await fetch(url).then(r => r.text());
+                    const images = extractImageUrls(html);
+                    allImages.push(...images);
+                    console.log(`   ✓ 此页获得 ${images.length} 张图片，总计 ${allImages.length} 张`);
+                  div.textContent = `🔔此页获得 ${images.length} 张图片，总计 ${allImages.length} 张`;
+
+                    // 延迟，避免请求过快
+                    await new Promise(resolve => setTimeout(resolve, 1));
+                } catch (error) {
+                    console.error(`   ✗ 第 ${page} 页获取失败:`, error);
+                }
+            }
+
+            console.log(`\n✨ 完成！共获得 ${allImages.length} 张图片`);
+          span.textContent = `\n✨ 完成！共获得 ${allImages.length} 张图片`;
+          const jspContent = document.querySelector(".jsPanel-content");
+          jspContent.appendChild(span);
+          jspContent.appendChild(div);
+          return allImages;
+        } catch (error) {
+            console.error('❌ 获取初始页面失败:', error);
+            return [];
+        }
+    }
+
+    const visualizeInterface = () => {
+      const input = document.createElement("input");
+      input.id = "urlBar";
+      input.style.width = "100%";
+      input.value = "https://www.antbyw.com/plugin.php?id=jameson_manhua&a=read&kuid=185545&zjid=1412432";
+      const button = document.createElement("button");
+      button.textContent = "retrieve";
+      resetButton.addEventListener("click", async () => {
+        const urls = await getImageUrls(input.value);
+        const imgsLFancy = await behaviours.attachPanel(urls);
+        const component = behaviours.assembleComponent(imgsLFancy);
+      });
+      const newDiv = document.createElement("div");
+      newDiv.appendChild(input);
+      newDiv.appendChild(button);
+      return newDiv;
     };
 
     /**
      * 域名配置
      */
     const domainConfig = [
-        {
-            name: "ghPage",
-            test: (dest, referrer) => /\bhttps?:\/\/\S+\.github\.io/i.test(dest),
-            action: () => console.log("GitHub Pages"),
+      {
+        name: "antbyw",
+        test: (dest) => /\bhttps?:\/\/www\.antbyw\.com/i.test(dest),
+        action: () => {
+          const nterface = visualizeInterface();
+          const out = behaviours(nterface);
         },
-        {
-            name: "msnCn",
-            test: (dest, referrer) => {
-                const pattern = /\bhttps?:\/\/www\.msn\.cn\/+/i;
-                // referrer 优先，其次当前 URL
-                return (referrer && pattern.test(referrer)) || pattern.test(dest);
-            },
-            action: () => msnBehaviour(),
+      },
+
+      {
+        name: "ghPage",
+        test: (dest) => /\bhttps?:\/\/\S+\.github\.io/i.test(dest),
+        action: () => console.log("GitHub Pages"),
+      },
+
+      {
+        name: "lovecutes",
+        test: (dest) => /\bhttps?:\/\/www\.lovecutes\.com/i.test(dest),
+        action: () => {
+          const ld = document.querySelectorAll("script[type='application/ld+json']");
+          const jsonData = JSON.parse(ld[0].textContent);
+          const urls = jsonData.itemListElement.map(i => i.contentUrl);
+          const imgsLFancy = await behaviours.attachPanel(urls);
+          const out = behaviours.assembleComponent(imgsLFancy);
         },
+      },
+
+      {
+        name: "msnCn",
+        test: (dest, referrer) => {
+          const pattern = /\bhttps?:\/\/www\.msn\.cn\/+/i;
+          // referrer 优先，其次当前 URL
+          return (referrer && pattern.test(referrer)) || pattern.test(dest);
+        },
+        action: async () => {
+          const urls = await getImageUrls();
+          const imgsLFancy = await behaviours.attachPanel(urls);
+          const out = behaviours.assembleComponent(imgsLFancy);
+        },
+      },
     ];
 
     const restrictDomain = async (dest, referrer = document.referrer) => {
@@ -289,6 +414,8 @@
         debug: true,
       });
 
+      // 域名identify
+      restrictDomain(document.URL);
       menuPack.menuui_js.initializeApp(yggd, executor);
     } catch (error) {
       console.error("initialization failed:", error);
