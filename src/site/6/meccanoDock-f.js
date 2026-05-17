@@ -1,13 +1,21 @@
+// ==UserScript==
+// @name        meccanoDock
+// @namespace   Violentmonkey Scripts
+// @match       *://*/*
+// @grant       none
+// @version     0.3.5.17
+// @author      -
+// @description 2026/5/17 00:00:00
+// ==/UserScript==
+
 /**
- * meccanoDock v0.3.5.11
+ * v
  */
 (() => {
   'use strict';
 
   const method = async () => {
-    const core = "https://rra.pages.dev/6/adDlibs.js";
-
-    const libs = [
+    const menuLibs = [
       "https://rra.pages.dev/6/vectorMenu/menuUI.css",
       "https://rra.pages.dev/6/vectorMenu/menuUI.js?exportName=initializeApp",
       "https://rra.pages.dev/6/vectorMenu/commandExecutor.js?exportName=CommandExecutor",
@@ -31,6 +39,7 @@
       "https://gcore.jsdelivr.net/gh/6cc/c/m/y/19/97.jpg",
     ];
 
+    const refer = new Object();
     const behaviours = {
       syncPlay: async () => {
         const aplayerLrc = [
@@ -38,44 +47,58 @@
           "https://rra.pages.dev/6/aPlr-LrcSync-050.js?exportName=initModule",
         ];
 
-        // ✨ 自动挂载到 behaviours
-        await behaviours.refer(aplayerLrc, {
-          mountTarget: behaviours,  // this 指向 behaviours
-        });
-
-        // 现在可以直接调用挂载的函数
-        behaviours.aplr_lrcsync_050_js.initModule?.();  // initModule 已挂载
+        // 半自动挂载到 refer，弃用this 指向 behaviours
+        const aplay = await refer.adDlibs(aplayerLrc);
+        const initModule = aplay.aplr_lrcsync_050_js.initModule;
+        // initModule 已挂载，现在可以直接调用
+        initModule?.();
       },
 
-      attachPanel: async () => {
+      attachContainer: async (ugc) => {
         const jsPanel4 = [
-          "https://esm.sh/imagesloaded@5.0.0",
-          "https://rra.pages.dev/6/imgload.css",
-          "https://rra.pages.dev/6/imageLoader.js?exportName=ImageLoader",
           "https://gcore.jsdelivr.net/gh/Flyer53/jsPanel4/es6module/jspanel.min.css",
           "https://gcore.jsdelivr.net/gh/Flyer53/jsPanel4/es6module/jspanel.min.js",
+        ];
+
+        // ✨ 自动挂载到 behaviours
+        const panel = await refer.adDlibs(jsPanel4);
+        const jsPanel = panel.jspanel.jsPanel;
+
+        // 现在可以直接调用挂载的函数
+        jsPanel?.create({
+          callback: (panel) => {
+            const contentDiv = panel.querySelector(".jsPanel-content");
+            contentDiv?.appendChild(ugc);
+          },
+        });
+      },
+
+      attachPanel: async (urls) => {
+        const imgsLib = [
+          "https://esm.sh/imagesloaded@5.0.0/es2022/imagesloaded.mjs",
+          "https://rra.pages.dev/6/imgload.css",
+          "https://rra.pages.dev/6/imageLoader.js?exportName=ImageLoader",
           "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.min.css",
           "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.esm.min.js",
         ];
 
         // ✨ 自动挂载到 behaviours
-        await behaviours.refer(jsPanel4, {
-          mountTarget: behaviours,  // this 指向 behaviours
-        });
-
+        const imgsLFancy = await refer.adDlibs(imgsLib);
+        
         // ✨ 调用 ImageLoader 接口
-        const imageContainer = behaviours.imageloader_js.ImageLoader.create(imageUrls, {
-          imagesLoaded: behaviours["imagesloaded@5_0_0"].default,
-          Fancybox: behaviours.fancybox_esm.Fancybox,
+        const imageContainer = imgsLFancy.imageloader_js.ImageLoader.create(urls, {
+          imagesLoaded: imgsLFancy.imagesloaded_mjs.default,
+          Fancybox: imgsLFancy.fancybox_esm.Fancybox,
         });
+        return imageContainer;
+      },
 
-        // 现在可以直接调用挂载的函数
-        behaviours.jspanel.jsPanel?.create({
-          callback: (panel) => {
-            const contentDiv = panel.querySelector(".jsPanel-content");
-            contentDiv?.appendChild(imageContainer);
-          },
-        });
+      assembleComponent: (imgsContainer, targetElem) => {
+        if (targetElem) {
+          targetElem.appendChild(imgsContainer);
+        } else {
+          const target = behaviours.attachContainer(imgsContainer);
+        }
       },
 
       '层二折叠1': () => console.log('执行: 层二折叠1'),
@@ -107,27 +130,168 @@
             },
           "mobile":{"show":true},
           "react":{"opacity":0.8},
-          "log":true});
+          "log":true,
+        });
+      },
+    };
+
+    const SCRIPT_START_TIME = performance.now();
+    /**
+     * 辅助函数 - 深层查询
+     */
+    // 1. 首先，定义这两个辅助函数在外面（全局作用域）
+    const querySelectorDeep = (selector, root = document) => {
+        let element = root.querySelector(selector);
+        if (element) return element;
+        
+        for (let el of root.querySelectorAll('*')) {
+            if (el.shadowRoot) {
+                element = querySelectorDeep(selector, el.shadowRoot);
+                if (element) return element;
+            }
+        }
+        return null;
+    };
+
+    const querySelectorAllDeep = (selector, root = document) => {
+        const results = [];
+        
+        // 在当前 root 查找
+        const found = root.querySelectorAll(selector);
+        results.push(...found);
+        
+        // 在所有元素的 shadowRoot 中递归查找
+        const allElements = root.querySelectorAll('*');
+        for (const el of allElements) {
+            if (el.shadowRoot) {
+                const foundInShadow = querySelectorAllDeep(selector, el.shadowRoot);
+                results.push(...foundInShadow);
+            }
+        }
+        
+        return results;
+    };
+
+    /**
+     * 等待容器元素出现 - 使用 Promise + MutationObserver
+     */
+    const waitForContainer = (selector) => {
+        return new Promise((resolve) => {
+            const observerStartTime = performance.now();
+            
+            // 立即检查一次
+            const container = querySelectorDeep(selector);
+            if (container && container.shadowRoot) {
+                resolve({
+                    element: container,
+                    observerTime: 0
+                });
+                return;
+            }
+            
+            let observer;
+            let resolved = false;
+            
+            // 设置 MutationObserver
+            observer = new MutationObserver(() => {
+                if (resolved) return;
+                
+                const found = querySelectorDeep(selector);
+                if (found && found.shadowRoot) {
+                    const observerEndTime = performance.now();
+                    observer.disconnect();
+                    resolved = true;
+                    
+                    resolve({
+                        element: found,
+                        observerTime: observerEndTime - observerStartTime
+                    });
+                }
+            });
+            
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+    };
+
+    const trimQueryPara = (urlIn) => {
+      const url = new URL(urlIn);
+      const urlOut = url.origin + url.pathname;
+      return urlOut;
+    };
+    /**
+     * 获取图片地址
+     */
+    const getImageUrls = async () => {
+        const containerResult = await waitForContainer('cp-article');
+        
+        console.log(`⏱️  MutationObserver 耗时: ${containerResult.observerTime.toFixed(2)}ms`);
+        
+        let allImages = [];
+        if (containerResult.element.shadowRoot) {
+            allImages = querySelectorAllDeep('img.article-image', containerResult.element.shadowRoot);
+        } else {
+            allImages = querySelectorAllDeep('img.article-image', containerResult.element);
+        }
+        
+        if (allImages.length === 0) {
+            allImages = querySelectorAllDeep('img.article-image', document);
+        }
+        
+        return allImages.map(img => img.src);
+    };
+
+    /**
+     * 域名配置
+     */
+    const domainConfig = [
+        {
+            name: "ghPage",
+            test: (dest, referrer) => /\bhttps?:\/\/\S+\.github\.io/i.test(dest),
+            action: () => console.log("GitHub Pages"),
         },
-      };
+        {
+            name: "msnCn",
+            test: (dest, referrer) => {
+                const pattern = /\bhttps?:\/\/www\.msn\.cn\/+/i;
+                // referrer 优先，其次当前 URL
+                return (referrer && pattern.test(referrer)) || pattern.test(dest);
+            },
+            action: () => msnBehaviour(),
+        },
+    ];
+
+    const restrictDomain = async (dest, referrer = document.referrer) => {
+        const config = domainConfig.find(cfg => 
+            cfg.test(dest, referrer)
+        );
+        
+        if (config) {
+            console.log(`[识别] ${config.name}`);
+            await config.action();
+            return config.name;
+        }
+        
+        console.log("default");
+        return "default";
+    };
+
+    const core = "https://rra.pages.dev/6/adDlibs.js";
     try {
-      const refer = await import(core);
+      const coreUnit = await import(core);
+      refer.adDlibs = coreUnit.default;
 
-      // ✨ 初始化时自动挂载到 behaviours
-      const init = await refer.default(libs, { 
-        mountTarget: behaviours,  // ✅ 自动挂载
-      });
-      behaviours.refer = refer.default;
-
+      // mountTarget: behaviours, 初始化时自动挂载到 behaviours
+      const menuPack = await refer.default(menuLibs);
+      
       // 创建命令执行器✨ 现在可以直接访问（已自动挂载）
-      const executor = new behaviours.commandexecutor_js.CommandExecutor({
+      const executor = new menuPack.commandexecutor_js.CommandExecutor({
         globalScope: behaviours,
         debug: true,
       });
 
-      behaviours.menuui_js.initializeApp(yggd, executor);
+      menuPack.menuui_js.initializeApp(yggd, executor);
     } catch (error) {
-      console.error("jsPanel initialization failed:", error);
+      console.error("initialization failed:", error);
       throw error;
     }
   };
