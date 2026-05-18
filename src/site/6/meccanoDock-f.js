@@ -328,8 +328,8 @@
       input.value = "https://www.antbyw.com/plugin.php?id=jameson_manhua&a=read&kuid=185545&zjid=1412432";
       const button = document.createElement("button");
       button.textContent = "retrieve";
-      resetButton.addEventListener("click", async () => {
-        const urls = await getImageUrls(input.value);
+      button.addEventListener("click", async () => {
+        const urls = await getAllImages(input.value);
         const imgsLFancy = await behaviours.attachPanel(urls);
         const component = behaviours.assembleComponent(imgsLFancy);
       });
@@ -348,7 +348,7 @@
         test: (dest) => /\bhttps?:\/\/www\.antbyw\.com/i.test(dest),
         action: () => {
           const nterface = visualizeInterface();
-          const out = behaviours(nterface);
+          const out = behaviours.assembleComponent(nterface);
         },
       },
 
@@ -360,8 +360,8 @@
 
       {
         name: "lovecutes",
-        test: (dest) => /\bhttps?:\/\/www\.lovecutes\.com/i.test(dest),
-        action: () => {
+        test: (dest) => /\bhttps?:\/\/(www\.lovecutes\.com|xx\.knit\.bid)/i.test(dest),
+        action: async () => {
           const ld = document.querySelectorAll("script[type='application/ld+json']");
           const jsonData = JSON.parse(ld[0].textContent);
           const urls = jsonData.itemListElement.map(i => i.contentUrl);
@@ -406,7 +406,7 @@
       refer.adDlibs = coreUnit.default;
 
       // mountTarget: behaviours, 初始化时自动挂载到 behaviours
-      const menuPack = await refer.default(menuLibs);
+      const menuPack = await refer.adDlibs(menuLibs);
       
       // 创建命令执行器✨ 现在可以直接访问（已自动挂载）
       const executor = new menuPack.commandexecutor_js.CommandExecutor({
