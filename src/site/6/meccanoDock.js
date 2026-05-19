@@ -1,6 +1,13 @@
-/**
- * meccanoDock v0.3.5.15
- */
+// ==UserScript==
+// @name        meccanoDock-f
+// @namespace   Violentmonkey Scripts
+// @match       *://*/*
+// @grant       none
+// @version     0.3.5.19
+// @author      -
+// @description 2026/5/19 00:00:00
+// ==/UserScript==
+
 (() => {
   'use strict';
 
@@ -26,7 +33,7 @@
     - wFlow_Visual
     `;
     const menu = {
-      workF_Interface: async () => {
+      workF_Interface: () => {
         const nterface = visualizeInterface();
         const out = behaviours.assembleComponent(nterface);
       },
@@ -45,11 +52,11 @@
           "https://rra.pages.dev/6/aPlr-LrcSync-050.js?exportName=initModule",
         ];
 
-        // ✨ 自动挂载到 behaviours
+        // semi自动挂载到refer obj，弃用this 指向 behaviours
         const aplay = await refer.adDlibs(aplayerLrc);
-        // 现在可以直接调用挂载的函数
-        const initModule = aplay.aplr_lrcsync_050_js.initModule;  // initModule 已挂载
-        initModule();
+        const initModule = aplay.aplr_lrcsync_050_js.initModule;
+        // 主函数已承接，现在可以直接调用挂载
+        initModule?.();
       },
 
       wFlow_Visual: async () => {
@@ -123,35 +130,51 @@
 
     const refer = new Object();
     const behaviours = {
-      attachPanel: async (param) => {
+      attachContainer: async (param) => {
         const jsPanel4 = [
-          "https://esm.sh/imagesloaded@5.0.0/es2022/imagesloaded.mjs",
-          "https://rra.pages.dev/6/imgload.css",
-          "https://rra.pages.dev/6/imageLoader.js?exportName=ImageLoader",
           "https://gcore.jsdelivr.net/gh/Flyer53/jsPanel4/es6module/jspanel.min.css",
           "https://gcore.jsdelivr.net/gh/Flyer53/jsPanel4/es6module/jspanel.min.js",
-          "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.min.css",
-          "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.esm.min.js",
         ];
 
         // ✨ 自动挂载到 behaviours
         const panel = await refer.adDlibs(jsPanel4);
         const jsPanel = panel.jspanel.jsPanel;
 
-        const urls = param === "msnCn" ? await getImageUrls() : imageUrls;
-        // ✨ 调用 ImageLoader 接口
-        const imageContainer = panel.imageloader_js.ImageLoader.create(urls, {
-          imagesLoaded: panel.imagesloaded_mjs.default,
-          Fancybox: panel.fancybox_esm.Fancybox,
-        });
-
         // 现在可以直接调用挂载的函数
         jsPanel?.create({
           callback: (panel) => {
             const contentDiv = panel.querySelector(".jsPanel-content");
-            contentDiv?.appendChild(imageContainer);
+            contentDiv?.appendChild(param);
           },
         });
+      },
+
+      attachPanel: async (urls) => {
+        const vLibs = [
+          "https://esm.sh/imagesloaded@5.0.0/es2022/imagesloaded.mjs",
+          "https://rra.pages.dev/6/imgload.css",
+          "https://rra.pages.dev/6/imageLoader.js?exportName=ImageLoader",
+          "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.min.css",
+          "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.esm.min.js",
+        ];
+
+        // ✨ 自动挂载到 behaviours
+        const imgsLFancy = await refer.adDlibs(vLibs);
+
+        // ✨ 调用 ImageLoader 接口
+        const imageContainer = imgsLFancy.imageloader_js.ImageLoader.create(urls, {
+          imagesLoaded: imgsLFancy.imagesloaded_mjs.default,
+          Fancybox: imgsLFancy.fancybox_esm.Fancybox,
+        });
+        return imageContainer;
+      },
+
+      assembleComponent: (imgsContainer, targetElem) => {
+        if (targetElem) {
+          targetElem.appendChild(imgsContainer);
+        } else {
+          const target = behaviours.attachContainer(imgsContainer);
+        }
       },
     };
 
@@ -163,6 +186,7 @@
       "https://gcore.jsdelivr.net/gh/6cc/c/m/y/19/97.jpg",
     ];
 
+    const SCRIPT_START_TIME = performance.now();
     /**
      * 辅助函数 - 深层查询
      */
@@ -268,23 +292,140 @@
     };
 
     /**
+     * 获取分页页码
+     */
+    function getPageCount(html) {
+        const pageMatch = html.match(/共\s*(\d+)\s*页/);
+        if (pageMatch) {
+            return parseInt(pageMatch[1]);
+        }
+        return 1;
+    }
+
+    /**
+     * 从HTML中提取图片地址数组
+     */
+    function extractImageUrls(html) {
+        const jsonMatch = html.match(/let\s+urls\s*=\s*(\[.*?\]);/s);
+        if (jsonMatch) {
+            try {
+                return JSON.parse(jsonMatch[1]);
+            } catch (e) {
+                console.error('JSON解析失败:', e);
+                return [];
+            }
+        }
+        return [];
+    }
+
+    /**
+     * 主函数：获取所有页面的图片
+     */
+    async function getAllImages(baseUrl) {
+      const allImages = [];
+      let pageCount = 1;
+      const span = document.createElement("div");
+      const div = document.createElement("div");
+
+      try {
+            // 第一步：获取初始页面，确定总页数
+            console.log('📖 正在获取初始页面...');
+          span.textContent = "📖 正在获取初始页面...";
+            let html = await fetch(baseUrl).then(r => r.text());
+            pageCount = getPageCount(html);
+            console.log(`✅ 共找到 ${pageCount} 页`);
+          span.textContent = `✅ 共找到 ${pageCount} 页`;
+
+            // 第二步：逐页获取
+            for (let page = 1; page <= pageCount; page++) {
+                // 首页不需要添加 page 参数
+                const url = page === 1
+                    ? baseUrl
+                    : `${baseUrl}&page=${page}`;
+
+                console.log(`📄 正在获取第 ${page}/${pageCount} 页: ${url}`);
+              span.textContent = `📄 正在获取第 ${page}/${pageCount} 页: ${url}`;
+
+                try {
+                    html = await fetch(url).then(r => r.text());
+                    const images = extractImageUrls(html);
+                    allImages.push(...images);
+                    console.log(`   ✓ 此页获得 ${images.length} 张图片，总计 ${allImages.length} 张`);
+                  div.textContent = `🔔此页获得 ${images.length} 张图片，总计 ${allImages.length} 张`;
+
+                    // 延迟，避免请求过快
+                    await new Promise(resolve => setTimeout(resolve, 1));
+                } catch (error) {
+                    console.error(`   ✗ 第 ${page} 页获取失败:`, error);
+                }
+            }
+
+            console.log(`\n✨ 完成！共获得 ${allImages.length} 张图片`);
+          span.textContent = `\n✨ 完成！共获得 ${allImages.length} 张图片`;
+          const trgtContainer = document.querySelector(".jsPanel-content");
+          trgtContainer.appendChild(span);
+          trgtContainer.appendChild(div);
+          return allImages;
+
+        } catch (error) {
+            console.error('❌ 获取初始页面失败:', error);
+            return [];
+        }
+    }
+
+    const visualizeInterface = () => {
+      const input = document.createElement("input");
+      input.id = "urlBar";
+      input.style.width = "100%";
+      input.value = "https://www.antbyw.com/plugin.php?id=jameson_manhua&a=read&kuid=185545&zjid=1412432";
+      const button = document.createElement("button");
+      button.textContent = "retrieve";
+      button.addEventListener("click", async () => {
+        const urls = await getAllImages(input.value);
+        const imgsLFancy = await behaviours.attachPanel(urls);
+        const out = behaviours.assembleComponent(imgsLFancy);
+      });
+      const newDiv = document.createElement("div");
+      newDiv.appendChild(input);
+      newDiv.appendChild(button);
+      return newDiv;
+    };
+
+    /**
      * 域名配置
      */
     const domainConfig = [
-        {
-            name: "ghPage",
-            test: (dest, referrer) => /\bhttps?:\/\/\S+\.github\.io/i.test(dest),
-            action: () => console.log("GitHub Pages"),
+      {
+        name: "antbyw",
+        test: (dest) => /\bhttps?:\/\/www\.antbyw\.com/i.test(dest),
+        action: () => menu.workF_Interface(),
+      },
+
+      {
+        name: "ghPage",
+        test: (dest) => /\bhttps?:\/\/\S+\.github\.io/i.test(dest),
+        action: () => console.log("GitHub Pages"),
+      },
+
+      {
+        name: "knitCutes",
+        test: (dest) => /\bhttps?:\/\/(www\.lovecutes\.com|xx\.knit\.bid)/i.test(dest),
+        action: () => menu.feature_Knit(),
+      },
+
+      {
+        name: "msnCn",
+        test: (dest, referrer) => {
+          const pattern = /\bhttps?:\/\/www\.msn\.cn\/+/i;
+          // referrer 优先，其次当前 URL
+          return (referrer && pattern.test(referrer)) || pattern.test(dest);
         },
-        {
-            name: "msnCn",
-            test: (dest, referrer) => {
-                const pattern = /\bhttps?:\/\/www\.msn\.cn\/+/i;
-                // referrer 优先，其次当前 URL
-                return (referrer && pattern.test(referrer)) || pattern.test(dest);
-            },
-            action: () => behaviours.attachPanel("msnCn"),
+        action: async () => {
+          const urls = await getImageUrls();
+          const imgsLFancy = await behaviours.attachPanel(urls);
+          const out = behaviours.assembleComponent(imgsLFancy);
         },
+      },
     ];
 
     const restrictDomain = async (dest, referrer = document.referrer) => {
@@ -311,24 +452,24 @@
 
       // 创建命令执行器✨ 现在可以直接访问（已自动挂载）
       const executor = new menuPack.commandexecutor_js.CommandExecutor({
-        globalScope: behaviours,
+        globalScope: menu,
         debug: true,
       });
 
-      // 使用
+      // 域名identify
       restrictDomain(document.URL);
       menuPack.menuui_js.initializeApp(yggd, executor);
     } catch (error) {
-      console.error("jsPanel initialization failed:", error);
+      console.error("initialization failed:", error);
       throw error;
     }
   };
 
   const readyDOM_Adapter = () => {
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", method);
+      document.addEventListener("DOMContentLoaded", mainFunction);
     } else {
-      method();
+      mainFunction();
     }
   };
 
