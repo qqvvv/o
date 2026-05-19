@@ -448,7 +448,7 @@
       refer.adDlibs = coreUnit.default;
 
       // mountTarget: behaviours,✨ 初始化时自动挂载到 behaviours
-      const menuPack = await refer.adDlibs(menu);
+      const menuPack = await refer.adDlibs(menuModule);
 
       // 创建命令执行器✨ 现在可以直接访问（已自动挂载）
       const executor = new menuPack.commandexecutor_js.CommandExecutor({

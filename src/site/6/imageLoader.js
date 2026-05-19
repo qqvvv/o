@@ -79,7 +79,7 @@ export const ImageLoader = (() => {
       fragment.appendChild(li);
     });
 
-    container.appendChild(fragment);
+    container.insertBefore(fragment, container.firstChild);
     wrapper.appendChild(statusElem);
     wrapper.appendChild(container);
 
