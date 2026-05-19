@@ -4,14 +4,17 @@
 (() => {
   'use strict';
 
-  const method = async () => {
-    const menu = [
+  const mainFunction = async () => {
+    const menuModule = [
       "https://rra.pages.dev/6/vectorMenu/menuUI.css",
       "https://rra.pages.dev/6/vectorMenu/menuUI.js?exportName=initializeApp",
       "https://rra.pages.dev/6/vectorMenu/commandExecutor.js?exportName=CommandExecutor",
     ];
 
     const yggd = `
+    - workF_Interface
+    - virtual_JsonLd
+    - feature_Knit
     - syncPlay
     - 层一折叠1
       - 层二折叠1
@@ -19,18 +22,23 @@
         - 层三功能2
       - 层二功能1 #?<endCluster=true &simpleAnchor=alias
     - attachPanel #?<comment= #YggdrAML
+    - live2d_widget
+    - wFlow_Visual
     `;
+    const menu = {
+      workF_Interface: async () => {
+        const nterface = visualizeInterface();
+        const out = behaviours.assembleComponent(nterface);
+      },
 
-    const imageUrls = [
-      "https://s2.loli.net/2023/03/01/dYQMrXeK8GVihP3.jpg",
-      "https://i.ibb.co/xSt0Rdk/95433208113.jpg",
-      "https://i.postimg.cc/ppCsnWdr/Windows-booting.png",
-      "https://i.loli.net/2018/05/08/5af11396cf460.gif",
-      "https://gcore.jsdelivr.net/gh/6cc/c/m/y/19/97.jpg",
-    ];
+      feature_Knit: async () => {
+        const ld = document.querySelectorAll("script[type='application/ld+json']");
+        const jsonData = JSON.parse(ld[0].textContent);
+        const urls = jsonData.itemListElement.map(i => i.contentUrl);
+        const imgsLFancy = await behaviours.attachPanel(urls);
+        const out = behaviours.assembleComponent(imgsLFancy);
+      },
 
-    const refer = new Object();
-    const behaviours = {
       syncPlay: async () => {
         const aplayerLrc = [
           "https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.css",
@@ -44,6 +52,77 @@
         initModule();
       },
 
+      wFlow_Visual: async () => {
+        const imgsLFancy = await behaviours.attachPanel(imageUrls);
+        const out = behaviours.assembleComponent(imgsLFancy);
+      },
+
+      live2d_widget: async () => {
+        const live2d = await refer.adDlibs(
+          "https://unpkg.com/live2d-widget@3.1.4/lib/L2Dwidget.min.js",
+        );
+
+        L2Dwidget.init({
+          "pluginRootPath":"live2dw/",
+          "pluginJsPath":"lib/",
+          "pluginModelPath":"assets/",
+          "tagMode":true,
+          "debug":true,
+          "model":{
+            "jsonPath":"https://unpkg.com/live2d-widget-model-mashiro-seifuku@1.0.1/assets/seifuku.model.json"},
+            "display":{
+              "position":"right",
+              "width":420,
+              "height":840,
+              "hOffset":0,
+              "vOffset":0
+            },
+          "mobile":{"show":true},
+          "react":{"opacity":0.8},
+          "log":true,
+        });
+      },
+
+      virtual_JsonLd: () => {
+        const script = document.createElement("script");
+        script.type = "application/ld+json";
+        script.textContent = `
+        {
+           "@context":"https://schema.org",
+           "@type":"ImageGallery",
+           "name":"[写] ",
+           "description":"桜",
+           "keywords":"桃",
+           "mainEntityOfPage":{
+              "@type":"WebPage",
+              "@id":"https://xx.knit.bid/article/30687/"
+           },
+           "numberOfItems":20,
+           "pagination":{
+              "@type":"Pagination",
+              "currentPage":1,
+              "totalPages":2
+           },
+           "itemListElement":[
+              {
+                 "@type":"ImageObject",
+                 "position":1,
+                 "contentUrl":"https://xx.knit.bid/static/images/2026/03/15/[%E5%86%99%E7%9C%9F]%20%E6%A1%9C%E6%A1%83%E5%96%B5%20-%20%E8%93%9D%EF%BC%9A%E6%B5%B7%E8%BE%B9%E8%A1%97%E6%8B%8D%E8%93%9D%E8%89%B2%E5%8D%AB%E8%A1%A3%20%E7%99%BD%E8%A2%9C%E7%BE%8E%E8%85%BF%E6%B8%85%E7%BA%AF%E5%86%99%E7%9C%9F%2020P/Cosplayer-Sakura-peach-meow-blue-lovecutes.com-001.jpg"
+              },
+              {
+                 "@type":"ImageObject",
+                 "position":10,
+                 "contentUrl":"https://xx.knit.bid/static/images/2026/03/15/[%E5%86%99%E7%9C%9F]%20%E6%A1%9C%E6%A1%83%E5%96%B5%20-%20%E8%93%9D%EF%BC%9A%E6%B5%B7%E8%BE%B9%E8%A1%97%E6%8B%8D%E8%93%9D%E8%89%B2%E5%8D%AB%E8%A1%A3%20%E7%99%BD%E8%A2%9C%E7%BE%8E%E8%85%BF%E6%B8%85%E7%BA%AF%E5%86%99%E7%9C%9F%2020P/Cosplayer-Sakura-peach-meow-blue-lovecutes.com-010.jpg"
+              }
+           ]
+        }
+        `;
+        document.getElementsByTagName('head')[0].appendChild(script);
+      },
+    };
+
+    const refer = new Object();
+    const behaviours = {
       attachPanel: async (param) => {
         const jsPanel4 = [
           "https://esm.sh/imagesloaded@5.0.0/es2022/imagesloaded.mjs",
@@ -74,36 +153,15 @@
           },
         });
       },
-
-      '层二折叠1': () => console.log('执行: 层二折叠1'),
-      '层三功能1': () => console.log('执行: 层三功能1'),
-      '层三功能2': () => console.log('执行: 层三功能2'),
-      '层二功能1': async () => {
-        const live2d = await refer.adDlibs(
-          "https://unpkg.com/live2d-widget@3.1.4/lib/L2Dwidget.min.js",
-        );
-
-        L2Dwidget.init({
-          "pluginRootPath":"live2dw/",
-          "pluginJsPath":"lib/",
-          "pluginModelPath":"assets/",
-          "tagMode":true,
-          "debug":true,
-          "model":{
-            "jsonPath":"https://unpkg.com/live2d-widget-model-mashiro-seifuku@1.0.1/assets/seifuku.model.json"},
-            "display":{
-              "position":"right",
-              "width":420,
-              "height":840,
-              "hOffset":0,
-              "vOffset":0
-            },
-          "mobile":{"show":true},
-          "react":{"opacity":0.8},
-          "log":true,
-        });
-      },
     };
+
+    const imageUrls = [
+      "https://s2.loli.net/2023/03/01/dYQMrXeK8GVihP3.jpg",
+      "https://i.ibb.co/xSt0Rdk/95433208113.jpg",
+      "https://i.postimg.cc/ppCsnWdr/Windows-booting.png",
+      "https://i.loli.net/2018/05/08/5af11396cf460.gif",
+      "https://gcore.jsdelivr.net/gh/6cc/c/m/y/19/97.jpg",
+    ];
 
     /**
      * 辅助函数 - 深层查询
