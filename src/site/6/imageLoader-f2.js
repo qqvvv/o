@@ -3,7 +3,7 @@
  * ImageLoader 模块 - 图片加载容器
  * 依赖: imagesLoaded, Fancybox (可选)
  */
-import { imagesLoaded } from 'https://esm.sh/imagesloaded@5.0.0/es2022/imagesloaded.mjs';
+import imagesLoaded from 'https://esm.sh/imagesloaded@5.0.0/es2022/imagesloaded.mjs';
 import { Fancybox } from 'https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.esm.min.js';
 
 export const ImageLoader = (() => {
