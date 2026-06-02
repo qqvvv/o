@@ -389,6 +389,38 @@
         }
     }
 
+    const parseHtmlCors = async (pageUrl) => {
+      try {
+        const response = await fetch("https://rzi.pages.dev?" + pageUrl);
+        const html = await response.text();
+
+        // 提取数值
+        const numMatch = html.match(/var\s+num\s*=\s*(?:eval\("(\d+)"\)|(\d+))/);
+        const num = numMatch ? parseInt(numMatch[1] || numMatch[2]) : 0;
+
+        // 提取 URL
+        const pasdMatch = html.match(/var\s+pasd\s*=\s*"([^"]+)"/);
+        let pasd = pasdMatch ? pasdMatch[1] : null;
+
+        if (!pasd || num === 0) {
+            throw new Error('无法提取必要信息');
+        }
+
+        // 确保 URL 以 / 结尾
+        if (!pasd.endsWith('/')) {
+            pasd += '/';
+        }
+
+        // 生成图片列表
+        return Array.from({ length: num }, (_, i) => (
+          `${pasd}${i + 1}.webp`
+        ));
+      } catch (error) {
+        console.error('提取图片失败:', error);
+        return [];
+      }
+    };
+
     const visualizeInterface = () => {
       const input = document.createElement("input");
       input.id = "urlBar";
@@ -399,11 +431,19 @@
       button.addEventListener("click", async () => {
         const urls = await getAllImages(input.value);
         const imgsLFancy = await behaviours.attachPanel(urls);
-        const output = behaviours.assembleComponent(imgsLFancy);
+        const out = behaviours.assembleComponent(imgsLFancy);
+      });
+      const butt_F = document.createElement("button");
+      butt_F.textContent = "wmanhua";
+      butt_F.addEventListener("click", async () => {
+        const urls = await parseHtmlCors(input.value);
+        const imgsLFancy = await behaviours.attachPanel(urls);
+        const out = behaviours.assembleComponent(imgsLFancy);
       });
       const newDiv = document.createElement("div");
       newDiv.appendChild(input);
       newDiv.appendChild(button);
+      newDiv.appendChild(butt_F);
       return newDiv;
     };
 
@@ -424,7 +464,7 @@
       },
 
       {
-        name: "lovecutes",
+        name: "knitCutes",
         test: (dest) => /\bhttps?:\/\/(www\.lovecutes\.com|xx\.knit\.bid)/i.test(dest),
         action: () => menuMethods.feature_Knit(),
       },
