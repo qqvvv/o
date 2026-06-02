@@ -1,18 +1,18 @@
 // ==UserScript==
-// @name        meccanoDock
+// @name        meccanoDock-f2
 // @namespace   Violentmonkey Scripts
 // @match       *://*/*
 // @grant       none
-// @version     0.3.6.1
+// @version     0.3.6.2
 // @author      -
-// @description 2026/6/1 00:00:00
+// @description 2026/6/2 00:00:00
 // ==/UserScript==
 
 (() => {
   'use strict';
 
   const primaryFunction = async () => {
-    const menuLibs = [
+    const menuSuite = [
       "https://rra.pages.dev/6/vectorMenu/menuUI.css",
       "https://rra.pages.dev/6/vectorMenu/menuUI.js?exportName=initializeApp",
       "https://rra.pages.dev/6/vectorMenu/commandExecutor.js?exportName=CommandExecutor",
@@ -34,7 +34,7 @@
     - wFlow_Visual
     `;
 
-    const menuMethod = {
+    const menuMethods = {
       workF_Interface: () => {
         const nterface = visualizeInterface();
         const out = behaviours.assembleComponent(nterface);
@@ -69,7 +69,7 @@
 
       live2d_widget: async () => {
         const live2d = await refer.adDlibs(
-          "https://unpkg.com/live2d-widget@3.1.4/lib/L2Dwidget.min.js"
+          "https://unpkg.com/live2d-widget@3.1.4/lib/L2Dwidget.min.js",
         );
 
         L2Dwidget.init({
@@ -133,7 +133,7 @@
 
     const refer = new Object();
     const behaviours = {
-      attachContainer: async (ugc) => {
+      attachContainer: async (param) => {
         const jsPanel4 = [
           "https://gcore.jsdelivr.net/gh/Flyer53/jsPanel4/es6module/jspanel.min.css",
           "https://gcore.jsdelivr.net/gh/Flyer53/jsPanel4/es6module/jspanel.min.js",
@@ -147,27 +147,25 @@
         jsPanel?.create({
           callback: (panel) => {
             const contentDiv = panel.querySelector(".jsPanel-content");
-            contentDiv?.appendChild(ugc);
+            contentDiv?.appendChild(param);
           },
         });
       },
 
       attachPanel: async (urls) => {
-        const imgsLib = [
-          "https://esm.sh/imagesloaded@5.0.0/es2022/imagesloaded.mjs",
+        const graphicSuite = [
           "https://rra.pages.dev/6/imgload.css",
-          "https://rra.pages.dev/6/imageLoader.js?exportName=ImageLoader",
+          "https://rra.pages.dev/6/imageLoader-f2.js?exportName=ImageLoader",
           "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.min.css",
-          "https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.esm.min.js",
         ];
 
         // ✨ 自动挂载到 behaviours
-        const imgsLFancy = await refer.adDlibs(imgsLib);
+        const imgsLFancy = await refer.adDlibs(graphicSuite);
         
         // ✨ 调用 ImageLoader 接口
-        const imageContainer = imgsLFancy.imageloader_js.ImageLoader.create(urls, {
-          imagesLoaded: imgsLFancy.imagesloaded_mjs.default,
-          Fancybox: imgsLFancy.fancybox_esm.Fancybox,
+        const imageContainer = imgsLFancy.imageloader_f2_js.ImageLoader.create(urls, {
+          sequential: true,  // 🆕 启用顺序加载
+          timeout: 5000,    // 🆕 单张超时时间（毫秒）
         });
         return imageContainer;
       },
@@ -179,47 +177,30 @@
           const target = behaviours.attachContainer(imgsContainer);
         }
       },
-
-      '层二折叠1': () => console.log('执行: 层二折叠1'),
-      '层三功能1': () => console.log('执行: 层三功能1'),
-      '层三功能2': () => console.log('执行: 层三功能2'),
-      '层二功能1': async () => {
-        const live2d = [
-          "https://unpkg.com/live2d-widget@3.1.4/lib/L2Dwidget.min.js",
-        ];
-
-        await behaviours.refer(live2d, {
-          mountTarget: behaviours,  // this 指向 behaviours
-        });
-        
-        L2Dwidget.init({
-          "pluginRootPath":"live2dw/",
-          "pluginJsPath":"lib/",
-          "pluginModelPath":"assets/",
-          "tagMode":true,
-          "debug":true,
-          "model":{
-            "jsonPath":"https://unpkg.com/live2d-widget-model-mashiro-seifuku@1.0.1/assets/seifuku.model.json"},
-            "display":{
-              "position":"right",
-              "width":420,
-              "height":840,
-              "hOffset":0,
-              "vOffset":0
-            },
-          "mobile":{"show":true},
-          "react":{"opacity":0.8},
-          "log":true,
-        });
-      },
     };
 
-    const imageUrls = [
-      "https://s2.loli.net/2023/03/01/dYQMrXeK8GVihP3.jpg",
-      "https://i.ibb.co/xSt0Rdk/95433208113.jpg",
-      "https://i.postimg.cc/ppCsnWdr/Windows-booting.png",
-      "https://i.loli.net/2018/05/08/5af11396cf460.gif",
-      "https://gcore.jsdelivr.net/gh/6cc/c/m/y/19/97.jpg",
+    const generateUrls = (folderPath, fileNames) => {
+      // ✅ 确保 folderPath 以 '/' 结尾
+      const normalizedPath = folderPath.endsWith('/') ? folderPath : folderPath + '/';
+      // ✅ 用 map 生成 URLs 数组
+      return fileNames.map(fileName => normalizedPath + fileName);
+    };
+
+    const folderPath = "https://gcore.jsdelivr.net/gh/6cc/c/p/j/";
+
+    const fileNames = [
+      "mmexport1756210129175.jpg",
+      "mmexport1756210136134.jpg",
+      "mmexport1756210140711.jpg",
+      "mmexport1756210208094.jpg",
+      "mmexport1778395329236.jpg",
+      "mmexport1778401748418.jpg",
+      "mmexport1778401761154.jpg",
+      "mmexport1778402184909.jpg",
+      "mmexport1778402196829.jpg",
+      "mmexport1778402242718-rl.jpg",
+      "mmexport1778402255773-rl.jpg",
+      "mmexport1778402301501-rl.jpg",
     ];
 
     const SCRIPT_START_TIME = performance.now();
@@ -398,9 +379,9 @@
 
             console.log(`\n✨ 完成！共获得 ${allImages.length} 张图片`);
           span.textContent = `\n✨ 完成！共获得 ${allImages.length} 张图片`;
-          const jspContent = document.querySelector(".jsPanel-content");
-          jspContent.appendChild(span);
-          jspContent.appendChild(div);
+          const trgtContainer = document.querySelector(".jsPanel-content");
+          trgtContainer.appendChild(span);
+          trgtContainer.appendChild(div);
           return allImages;
         } catch (error) {
             console.error('❌ 获取初始页面失败:', error);
@@ -418,7 +399,7 @@
       button.addEventListener("click", async () => {
         const urls = await getAllImages(input.value);
         const imgsLFancy = await behaviours.attachPanel(urls);
-        const component = behaviours.assembleComponent(imgsLFancy);
+        const output = behaviours.assembleComponent(imgsLFancy);
       });
       const newDiv = document.createElement("div");
       newDiv.appendChild(input);
@@ -433,10 +414,7 @@
       {
         name: "antbyw",
         test: (dest) => /\bhttps?:\/\/www\.antbyw\.com/i.test(dest),
-        action: () => {
-          const nterface = visualizeInterface();
-          const out = behaviours.assembleComponent(nterface);
-        },
+        action: () => menuMethods.workF_Interface(),
       },
 
       {
@@ -448,13 +426,7 @@
       {
         name: "lovecutes",
         test: (dest) => /\bhttps?:\/\/(www\.lovecutes\.com|xx\.knit\.bid)/i.test(dest),
-        action: async () => {
-          const ld = document.querySelectorAll("script[type='application/ld+json']");
-          const jsonData = JSON.parse(ld[0].textContent);
-          const urls = jsonData.itemListElement.map(i => i.contentUrl);
-          const imgsLFancy = await behaviours.attachPanel(urls);
-          const out = behaviours.assembleComponent(imgsLFancy);
-        },
+        action: () => menuMethods.feature_Knit(),
       },
 
       {
@@ -487,23 +459,23 @@
         return "default";
     };
 
-    const core = "https://rra.pages.dev/6/adDlibs.js";
     try {
-      const coreUnit = await import(core);
+      const coreUnit = await import(
+        "https://rra.pages.dev/6/adDlibs.js"
+      );
       refer.adDlibs = coreUnit.default;
-
-      // mountTarget: behaviours, 初始化时自动挂载到 behaviours
-      const menuPack = await refer.adDlibs(menuLibs);
+      // mountTarget: behaviours, 弃用初始化时自动挂载到 behaviours
+      const menuFeature = await refer.adDlibs(menuSuite);
       
       // 创建命令执行器✨ 现在可以直接访问（已自动挂载）
-      const executor = new menuPack.commandexecutor_js.CommandExecutor({
-        globalScope: behaviours,
+      const executor = new menuFeature.commandexecutor_js.CommandExecutor({
+        globalScope: menuMethods,
         debug: true,
       });
 
       // 域名identify
       restrictDomain(document.URL);
-      menuPack.menuui_js.initializeApp(yggd, executor);
+      menuFeature.menuui_js.initializeApp(yggd, executor);
     } catch (error) {
       console.error("initialization failed:", error);
       throw error;
