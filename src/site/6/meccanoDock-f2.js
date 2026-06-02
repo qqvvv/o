@@ -3,18 +3,15 @@
 // @namespace   Violentmonkey Scripts
 // @match       *://*/*
 // @grant       none
-// @version     0.3.5.17
+// @version     0.3.6.1
 // @author      -
-// @description 2026/5/17 00:00:00
+// @description 2026/6/1 00:00:00
 // ==/UserScript==
 
-/**
- * v
- */
 (() => {
   'use strict';
 
-  const method = async () => {
+  const primaryFunction = async () => {
     const menuLibs = [
       "https://rra.pages.dev/6/vectorMenu/menuUI.css",
       "https://rra.pages.dev/6/vectorMenu/menuUI.js?exportName=initializeApp",
@@ -22,6 +19,10 @@
     ];
 
     const yggd = `
+    - workF_Interface
+    - virtual_JsonLd
+    - feature_Knit
+    - folderPath_file
     - syncPlay
     - 层一折叠1
       - 层二折叠1
@@ -29,31 +30,109 @@
         - 层三功能2
       - 层二功能1 #?<endCluster=true &simpleAnchor=alias
     - attachPanel #?<comment= #YggdrAML
+    - live2d_widget
+    - wFlow_Visual
     `;
 
-    const imageUrls = [
-      "https://s2.loli.net/2023/03/01/dYQMrXeK8GVihP3.jpg",
-      "https://i.ibb.co/xSt0Rdk/95433208113.jpg",
-      "https://i.postimg.cc/ppCsnWdr/Windows-booting.png",
-      "https://i.loli.net/2018/05/08/5af11396cf460.gif",
-      "https://gcore.jsdelivr.net/gh/6cc/c/m/y/19/97.jpg",
-    ];
+    const menuMethod = {
+      workF_Interface: () => {
+        const nterface = visualizeInterface();
+        const out = behaviours.assembleComponent(nterface);
+      },
 
-    const refer = new Object();
-    const behaviours = {
+      feature_Knit: async () => {
+        const ld = document.querySelectorAll("script[type='application/ld+json']");
+        const jsonData = JSON.parse(ld[0].textContent);
+        const urls = jsonData.itemListElement.map(i => i.contentUrl);
+        const imgsLFancy = await behaviours.attachPanel(urls);
+        const out = behaviours.assembleComponent(imgsLFancy);
+      },
+
       syncPlay: async () => {
         const aplayerLrc = [
           "https://cdnjs.cloudflare.com/ajax/libs/aplayer/1.10.1/APlayer.min.css",
           "https://rra.pages.dev/6/aPlr-LrcSync-050.js?exportName=initModule",
         ];
 
-        // 半自动挂载到 refer，弃用this 指向 behaviours
+        // semi自动挂载到 refer（obj），弃用this 指向 behaviours
         const aplay = await refer.adDlibs(aplayerLrc);
         const initModule = aplay.aplr_lrcsync_050_js.initModule;
-        // initModule 已挂载，现在可以直接调用
+        // 已承接主函数，现在可以直接调用挂载
         initModule?.();
       },
 
+      wFlow_Visual: async () => {
+        const urlsArr = generateUrls(folderPath, fileNames);
+        const imgsLFancy = await behaviours.attachPanel(urlsArr);
+        const out = behaviours.assembleComponent(imgsLFancy);
+      },
+
+      live2d_widget: async () => {
+        const live2d = await refer.adDlibs(
+          "https://unpkg.com/live2d-widget@3.1.4/lib/L2Dwidget.min.js"
+        );
+
+        L2Dwidget.init({
+          "pluginRootPath":"live2dw/",
+          "pluginJsPath":"lib/",
+          "pluginModelPath":"assets/",
+          "tagMode":true,
+          "debug":true,
+          "model":{
+            "jsonPath":"https://unpkg.com/live2d-widget-model-mashiro-seifuku@1.0.1/assets/seifuku.model.json"},
+            "display":{
+              "position":"right",
+              "width":420,
+              "height":840,
+              "hOffset":0,
+              "vOffset":0
+            },
+          "mobile":{"show":true},
+          "react":{"opacity":0.8},
+          "log":true,
+        });
+      },
+
+      virtual_JsonLd: () => {
+        const script = document.createElement("script");
+        script.type = "application/ld+json";
+        script.textContent = `
+        {
+           "@context":"https://schema.org",
+           "@type":"ImageGallery",
+           "name":"[写] ",
+           "description":"桜",
+           "keywords":"桃",
+           "mainEntityOfPage":{
+              "@type":"WebPage",
+              "@id":"https://xx.knit.bid/article/30687/"
+           },
+           "numberOfItems":20,
+           "pagination":{
+              "@type":"Pagination",
+              "currentPage":1,
+              "totalPages":2
+           },
+           "itemListElement":[
+              {
+                 "@type":"ImageObject",
+                 "position":1,
+                 "contentUrl":"https://xx.knit.bid/static/images/2026/03/15/[%E5%86%99%E7%9C%9F]%20%E6%A1%9C%E6%A1%83%E5%96%B5%20-%20%E8%93%9D%EF%BC%9A%E6%B5%B7%E8%BE%B9%E8%A1%97%E6%8B%8D%E8%93%9D%E8%89%B2%E5%8D%AB%E8%A1%A3%20%E7%99%BD%E8%A2%9C%E7%BE%8E%E8%85%BF%E6%B8%85%E7%BA%AF%E5%86%99%E7%9C%9F%2020P/Cosplayer-Sakura-peach-meow-blue-lovecutes.com-001.jpg"
+              },
+              {
+                 "@type":"ImageObject",
+                 "position":10,
+                 "contentUrl":"https://xx.knit.bid/static/images/2026/03/15/[%E5%86%99%E7%9C%9F]%20%E6%A1%9C%E6%A1%83%E5%96%B5%20-%20%E8%93%9D%EF%BC%9A%E6%B5%B7%E8%BE%B9%E8%A1%97%E6%8B%8D%E8%93%9D%E8%89%B2%E5%8D%AB%E8%A1%A3%20%E7%99%BD%E8%A2%9C%E7%BE%8E%E8%85%BF%E6%B8%85%E7%BA%AF%E5%86%99%E7%9C%9F%2020P/Cosplayer-Sakura-peach-meow-blue-lovecutes.com-010.jpg"
+              }
+           ]
+        }
+        `;
+        document.getElementsByTagName('head')[0].appendChild(script);
+      },
+    };
+
+    const refer = new Object();
+    const behaviours = {
       attachContainer: async (ugc) => {
         const jsPanel4 = [
           "https://gcore.jsdelivr.net/gh/Flyer53/jsPanel4/es6module/jspanel.min.css",
@@ -134,6 +213,14 @@
         });
       },
     };
+
+    const imageUrls = [
+      "https://s2.loli.net/2023/03/01/dYQMrXeK8GVihP3.jpg",
+      "https://i.ibb.co/xSt0Rdk/95433208113.jpg",
+      "https://i.postimg.cc/ppCsnWdr/Windows-booting.png",
+      "https://i.loli.net/2018/05/08/5af11396cf460.gif",
+      "https://gcore.jsdelivr.net/gh/6cc/c/m/y/19/97.jpg",
+    ];
 
     const SCRIPT_START_TIME = performance.now();
     /**
@@ -425,9 +512,9 @@
 
   const readyDOM_Adapter = () => {
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", method);
+      document.addEventListener("DOMContentLoaded", primaryFunction);
     } else {
-      method();
+      primaryFunction();
     }
   };
 
