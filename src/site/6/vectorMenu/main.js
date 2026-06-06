@@ -1,29 +1,34 @@
 function generateUrlArray(urlTemplate) {
   // 1) 找到扩展名
-  const extMatch = urlTemplate.match(/(\.\w+)$/);
+  const extMatch = urlTemplate.match(/(\.[^.]+)$/);
   if (!extMatch) {
-    throw new Error('找不到文件扩展名');
+    throw new Error('无法从URL中提取文件扩展名');
   }
-  
-  const extension = extMatch[1]; // .jpg
-  const urlWithoutExt = urlTemplate.slice(0, -extension.length); // 去掉扩展名
-  
-  // 2) 提取最后的数字
-  const numMatch = urlWithoutExt.match(/(\d+)([^/]*)$/);
-  if (!numMatch) {
-    throw new Error('找不到数字');
+  const extension = extMatch[1]; // 如 ".jpg"
+
+  // 2) 在扩展名前的部分找出最后一个数字串
+  const basePart = urlTemplate.slice(0, -extension.length);
+  const digitSeq = basePart.match(/\d+/g);
+  if (!digitSeq || digitSeq.length === 0) {
+    throw new Error('无法在扩展名前找到数字序列');
   }
-  
-  const targetNum = parseInt(numMatch[1]);
-  const suffix = numMatch[2]; // 数字后的部分，如 ")"
-  const baseUrl = urlWithoutExt.slice(0, -numMatch[0].length); // 去掉数字和后缀
-  
-  // 3) 生成URL数组
+  const lastNumStr = digitSeq[digitSeq.length - 1]; // 最后一个数字串，如 "121"
+  const targetNum = parseInt(lastNumStr, 10);
+
+  // 3) 找到最后一个数字串的位置
+  const startIndex = basePart.lastIndexOf(lastNumStr);
+  const endIndex = startIndex + lastNumStr.length;
+
+  // 4) 分离前缀、后缀
+  const prefix = basePart.substring(0, startIndex);
+  const suffix = basePart.substring(endIndex); // 如 " (", ")", 等
+
+  // 5) 生成 URL 数组
   const urlArray = [];
   for (let i = 0; i <= targetNum; i++) {
-    urlArray.push(`${baseUrl}${i}${suffix}${extension}`);
+    urlArray.push(`${prefix}${i}${suffix}${extension}`);
   }
-  
+
   return urlArray;
 }
 
