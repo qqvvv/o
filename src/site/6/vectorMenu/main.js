@@ -39,3 +39,18 @@ const result = generateUrlArray(inputUrl);
 console.log(`总共生成 ${result.length} 个URL`);
 console.log('第一个:', result[0]);
 console.log('最后一个:', result[result.length - 1]);
+
+const obj = {
+  funcA: (input) => input + 1,
+  funcB: (input) => input + 2,
+};
+
+const funcMain = (param, input) => {
+  if (!(param in obj)) {
+    throw new Error(`Unknown algorithm: ${param}`);
+  }
+  return obj[param](input);
+};
+
+const result = funcMain('funcA', 1); // ✅ 3
+console.info(result);
