@@ -4,6 +4,13 @@
  * https://codepen.io/alvarotrigo/pen/mdXPawB
  */
 
+:root {
+  --borColor: rgba(0, 0, 0, 0);
+  --sizeVar: 8px;
+  --textPrimary: #4b4760;
+  --textSecondary: #7f7989;
+  --borderColor: #cccccc;
+}
 body {
   font-family: "Roboto", sans-serif;
   font-weight: 400;
