@@ -188,7 +188,7 @@ class MenuBuilder {
     // 主按钮
     const button = document.createElement("button");
     button.className = "sec_btn";
-    button.textContent = "≡";
+    button.textContent = "䷬";
     button.onclick = this.toggleMenu.bind(this);
     flexDiv.appendChild(button);
 

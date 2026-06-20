@@ -63,3 +63,14 @@
      height: 4px;
      margin-bottom: 10px;
 }
+
+ul.image-loader-ul {
+  background-color: #fff;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+ul.image-loader-ul li {
+  background-color: #fff;
+  margin: 0;
+}
