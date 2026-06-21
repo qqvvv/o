@@ -432,3 +432,6 @@ export function initializeApp(data, commandExecutor) {
 
   document.body.appendChild(ui);
 }
+
+// 导出类本身，供外部使用
+export { CommandExecutor };
