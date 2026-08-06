@@ -6,9 +6,9 @@ import imagesBox_css from './imagesBox.css' with { type: "css" };
 import imagesLoaded from 'https://esm.sh/imagesloaded@5.0.0/es2022/imagesloaded.mjs';
 import Fancybox_css from 'https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.min.css' with { type: "css" };
 import { Fancybox } from 'https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.esm.min.js';
-import getCoreDomain from './getCoreDomain.js';
-import getFileName from './getFileName.js';
-import renderStyledTags from './renderStyledTags.js';
+import { getCoreDomain } from './getCoreDomain.js';
+import { getFileName } from './getFileName.js';
+import { renderStyledTags } from './renderStyledTags.js';
 
 /**
  * 创建图片加载器容器（顺序加载版本）

@@ -7,7 +7,10 @@ export const getCoreDomain = (urlString) => {
 
   // 检查是否是二级后缀
   const lastTwo = parts.slice(-2).join('.');
-  if (data.secondLevelDomains.has(lastTwo)) {
+  const secondLevelDomains = new Set([
+    'com.cn', 'net.cn',
+  ]);
+  if (secondLevelDomains.has(lastTwo)) {
     return parts.slice(-3).join('.');
   }
 
