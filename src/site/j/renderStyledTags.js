@@ -1,18 +1,18 @@
-function* tokenizeFromObj(obj, template = null) {
+function* tokenizeFromObject(obj, template = null) {
   const entries = Object.entries(obj);
-
+  
   for (const [key, value] of entries) {
     yield { type: 'key', value: `${key}:` };
     yield { type: 'value', value: String(value) };
     // 可选：添加分隔符
     yield { type: 'separator', value: ' ' };
   }
-};
+}
 
 export const renderStyledTags = (obj) => {
   const div = document.createElement('div');
 
-  for (const token of methods.tokenizeFromObj(obj)) {
+  for (const token of tokenizeFromObject(obj)) {
     if (token.type === 'key') {
       // key 使用 span
       const span = document.createElement('span');
