@@ -1,4 +1,4 @@
-const user = {};
+const data = {}; // Failed to fetch imagesBox_js
 // 常见的二级后缀
 data.secondLevelDomains = new Set([
   'com.cn', 'net.cn',
