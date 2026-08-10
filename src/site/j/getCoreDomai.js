@@ -1,3 +1,9 @@
+const user = {};
+// 常见的二级后缀
+data.secondLevelDomains = new Set([
+  'com.cn', 'net.cn',
+]);
+
 export const getCoreDomain = (urlString) => {
   const url = new URL(urlString.startsWith('http') ? urlString : 'http://' + urlString);
   const hostname = url.hostname;
@@ -7,10 +13,7 @@ export const getCoreDomain = (urlString) => {
 
   // 检查是否是二级后缀
   const lastTwo = parts.slice(-2).join('.');
-  const secondLevelDomains = new Set([
-    'com.cn', 'net.cn',
-  ]);
-  if (secondLevelDomains.has(lastTwo)) {
+  if (data.secondLevelDomains.has(lastTwo)) {
     return parts.slice(-3).join('.');
   }
 

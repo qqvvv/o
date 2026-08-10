@@ -1,12 +1,13 @@
+
 /**
- * imagesBox.js - v0.4.8.6
+ * imagesBox.js - v0.4.8.10
  * 依赖: imagesLoaded, Fancybox (可选)
  */
 import imagesBox_css from './imagesBox.css' with { type: "css" };
 import imagesLoaded from 'https://esm.sh/imagesloaded@5.0.0/es2022/imagesloaded.mjs';
 import Fancybox_css from 'https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.min.css' with { type: "css" };
 import { Fancybox } from 'https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.esm.min.js';
-import { getCoreDomain } from './getCoreDomai.js';
+import { getCoreDomain } from './getCoreDomain.js';
 import { getFileName } from './getFileName.js';
 import { renderStyledTags } from './renderStyledTags.js';
 
@@ -30,9 +31,6 @@ export const imagesBox = (imageUrls, options = {}) => {
     sequential = false,
     timeout = 3000,
   } = options;
-  // 创建主容器
-  const wrapper = document.createElement('div');
-  wrapper.className = 'imagesloaded-container';
 
   // 创建状态显示元素
   const statusElem = document.createElement('div');
@@ -49,19 +47,12 @@ export const imagesBox = (imageUrls, options = {}) => {
   statusElem.appendChild(progressElem);
   statusElem.appendChild(statusText);
 
-  // 创建图片容器
-  const container = document.createElement('ul');
-  container.className = 'imagesloaded-ul';
-  if (genSeq) {
-    container.classList.add('show-seq-mode');
-  }
-
+  // 创建主容器
+  const fragment = new DocumentFragment();
+  const units = [];
+  const imgElements = []; // 保存 img 元素引用
   // 为 Fancybox 准备数据
   const gallery_items = imageUrls.map(src => ({ src, type: 'image' }));
-
-  // 添加图片元素
-  const fragment = document.createDocumentFragment();
-  const imgElements = []; // 保存 img 元素引用
 
   imageUrls.forEach((url, idx) => {
     const li = document.createElement('li');
@@ -124,11 +115,10 @@ export const imagesBox = (imageUrls, options = {}) => {
     imgWrapper.append(img, labelWrapper);
     li.appendChild(imgWrapper);
     fragment.appendChild(li);
+    units.push(li);
   });
 
-  container.insertBefore(fragment, container.firstChild);
-  wrapper.appendChild(statusElem);
-  wrapper.appendChild(container);
+  document.body.appendChild(statusElem);
 
   // 选择加载策略
   const isSequential = options.sequential === true;
@@ -137,7 +127,7 @@ export const imagesBox = (imageUrls, options = {}) => {
     // ✅ 【顺序加载】方案
     _sequentialLoad(
       imgElements,
-      container,
+      fragment,
       progressElem,
       statusText,
       statusElem,
@@ -146,7 +136,7 @@ export const imagesBox = (imageUrls, options = {}) => {
   } else {
     // ✅ 【并发加载】方案（保留原逻辑）
     _concurrentLoad(
-      container,
+      fragment,
       progressElem,
       statusText,
       statusElem,
@@ -155,14 +145,14 @@ export const imagesBox = (imageUrls, options = {}) => {
     );
   }
 
-  return wrapper;
+  return units;
 }
 
 /**
  * 顺序加载实现（进度修正）
  */
 const _sequentialLoad = (imgElements,
-  container, progressElem, statusText, statusElem, options) => {
+  fragment, progressElem, statusText, statusElem, options) => {
   const total = imgElements.length;
   let loadedCount = 0; // 仅用于完成统计，不用于进度显示
   const supportsProgress = progressElem &&
@@ -248,7 +238,7 @@ const _sequentialLoad = (imgElements,
 /**
  * 并发加载实现（原逻辑 + genSeq 支持）
  */
-const _concurrentLoad = (container,
+const _concurrentLoad = (fragment,
   progressElem, statusText, statusElem, total, options) => {
   let loadedCount = 0;
   const supportsProgress = progressElem &&
@@ -256,7 +246,7 @@ const _concurrentLoad = (container,
 
   if (imagesLoaded && typeof imagesLoaded === 'function') {
     try {
-      const imgLoad = imagesLoaded(container);
+      const imgLoad = imagesLoaded(fragment);
 
       imgLoad.on('progress', function(instance, image) {
         // 更新单张图片状态

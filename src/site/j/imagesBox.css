@@ -1,11 +1,10 @@
+
 /**
- * imagesBox.css
- * 20260806
+ * imagesBox.css v0.4.8.10
  */
-.imagesloaded-container img {
+.imagesloaded-ul img {
     max-height: 140px;
-    border-radius: 5px;
-/*! normalize.css v3.0.3 */
+    border-radius: 5px; /*! normalize.css v3.0.3 */
 /* Claude added
     width: 100%;
     height: 100%;
@@ -13,7 +12,7 @@
 */
 }
 
-.imagesloaded-container li {
+.imagesloaded-ul li {
     height: 140px;
     min-width: 100px;
     display: block;
@@ -22,16 +21,14 @@
     list-style: none;
     margin: 0 5px 5px 0;
     background-color: black;
+*/
     background-position: center center;
     background-repeat: no-repeat;
-*/
-    border-radius: 5px;
-/*! normalize.css v3.0.3 */
-    overflow: hidden;
-/* Claude added */
+    border-radius: 5px; /*! normalize.css v3.0.3 */
+    overflow: hidden; /* Claude added */
 }
 
-.imagesloaded-container img, /* li img Risk */
+.imagesloaded-ul img, /* li img Risk */
 .imagesloaded-status {
 /* container-status */
     -webkit-transition: opacity 0.4s;
@@ -40,24 +37,23 @@
     transition: opacity 0.4s;
 }
 
-.imagesloaded-container li.is-loading {
+.imagesloaded-ul li.is-loading {
     background-color: black;
     background-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/82/loading.gif');
 }
 
-.imagesloaded-container li.is-broken {
+.imagesloaded-ul li.is-broken {
     background-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/82/broken.png');
     background-color: #be3730;
     width: 120px;
 }
 
-.imagesloaded-container li.is-loading img,
-.imagesloaded-container li.is-broken img {
+.imagesloaded-ul li.is-loading img,
+.imagesloaded-ul li.is-broken img {
     opacity: 0;
 }
 
-.imagesloaded-status {
-/* not -container */
+.imagesloaded-status { /* not -container */
     opacity: 0;
     position: fixed;
     right: 20px;
@@ -67,8 +63,7 @@
     border-radius: 10px;
     z-index: 2;
 /* over other stuff */
-    color: white;
-/*! normalize.css v3.0.3 */
+    color: white; /*! normalize.css v3.0.3 */
 /*
     min-width: 100px;
     text-align: center;
@@ -76,7 +71,7 @@
 }
 
 .imagesloaded-progress {
-/* not -container ! normalize.css v3.0.3 */
+/*! normalize.css v3.0.3 not -container*/
     font-size: 28px;
 /* Claude added
     width: 100%;
@@ -85,7 +80,7 @@
 */
 }
 
-.imagesloaded-container ul {
+.imagesloaded-ul {
 /* by Claude */
     list-style: none;
     padding: 0;
@@ -102,8 +97,7 @@ ul.imagesloaded-ul {
     padding: 5px;
 }
 
-ul.imagesloaded-ul li {
-/* not -container */
+ul.imagesloaded-ul li { /* not -container */
     background-color: #fff;
     margin: 0;
 }
