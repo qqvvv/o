@@ -6,13 +6,12 @@
  */
 import Fancybox_css from 'https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.min.css' with { type: "css" };
 import { Fancybox } from 'https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.esm.min.js';
-import { getCoreDomain } from './getCoreDomain.js';
-import { getFileName } from './getFileName.js';
-import { renderStyledTags } from './renderStyledTags.js';
+import { urlParse } from './urlParse.js';
+import { render } from './render.js';
 
 document.adoptedStyleSheets.push(Fancybox_css);
 
-export const bindFancyboxGallery = (container, imageData, options = {}) => {
+export const bindFancyboxGallery = (container, srcMapedArray, options = {}) => {
   if (!container) {
     console.warn("❌ bindFancyboxGallery: 容器不存在");
     return false;
@@ -23,7 +22,7 @@ export const bindFancyboxGallery = (container, imageData, options = {}) => {
     return false;
   }
 
-  if (!Array.isArray(imageData) || imageData.length === 0) {
+  if (!Array.isArray(srcMapedArray) || srcMapedArray.length === 0) {
     console.warn("❌ bindFancyboxGallery: 图片数据为空");
     return false;
   }
@@ -38,7 +37,7 @@ export const bindFancyboxGallery = (container, imageData, options = {}) => {
     const startIndex = Array.from(container.children).indexOf(unit);
 
     // 打开 Fancybox
-    Fancybox.show(gallery_items, {
+    Fancybox.show(srcMapedArray, {
             slug: 'gallery',
             startIndex: startIndex,
             // 合并用户传入的选项
@@ -48,8 +47,8 @@ export const bindFancyboxGallery = (container, imageData, options = {}) => {
               const obj = {
                 宽高: `${img.naturalWidth} x ${img.naturalHeight}`,
                 自动: `${((img.height / img.naturalHeight) * 100).toFixed(2)} %`,
-                来源: getCoreDomain(img.src),
-                文件: getFileName(img.src),
+                来源: urlParse.getCoreDomain(img.src),
+                文件: urlParse.getFileName(img.src),
               };
               const tag = renderStyledTags(obj);
               return tag;

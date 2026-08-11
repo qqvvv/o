@@ -22,4 +22,4 @@ urlParse.getFileName = (urlString) => {
     .split('.')[0];
 };
 
-export {urlParse};
+export { urlParse };
