@@ -1,4 +1,10 @@
 const urlParse = {};
+const data = {};
+// 常见的二级后缀
+data.secondLevelDomains = new Set([
+  'com.cn', 'net.cn',
+]);
+
 urlParse.getCoreDomain = (urlString) => {
   const url = new URL(urlString.startsWith('http') ? urlString : 'http://' + urlString);
   const hostname = url.hostname;
