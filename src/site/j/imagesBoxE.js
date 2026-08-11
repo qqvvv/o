@@ -1,10 +1,11 @@
 
 /**
- * imagesBox.js - v0.4.8.11
+ * imagesBox.js - v0.4.8.9
  * 依赖: imagesLoaded, Fancybox (可选)
  */
 import imagesBox_css from './imagesBox.css' with { type: "css" };
 import imagesLoaded from 'https://esm.sh/imagesloaded@5.0.0/es2022/imagesloaded.mjs';
+import { urlParse } from './urlParse.js';
 
 /**
  * 创建图片加载器容器（顺序加载版本）
@@ -217,7 +218,7 @@ const _concurrentLoad = (fragment,
           li.className = image.isLoaded ? '' : 'is-broken';
           const seq_label = li.querySelector('.seq-label');
           if (seq_label && image.isLoaded) {
-            const fileName = getFileName(img.src);
+            const fileName = urlParse.getFileName(img.src);
             const label = `${fileName} ${img.naturalWidth} x ${img.naturalHeight}`;
             seq_label.textContent = label;
           }
