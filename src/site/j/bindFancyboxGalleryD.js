@@ -6,7 +6,7 @@
  */
 import Fancybox_css from 'https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.min.css' with { type: "css" };
 import { Fancybox } from 'https://cdnjs.cloudflare.com/ajax/libs/fancyapps-ui/5.0.36/fancybox/fancybox.esm.min.js';
-import { urlParse } from './urlParseE.js';
+import { urlParse } from './urlParse.js';
 import { render } from './render.js';
 
 document.adoptedStyleSheets.push(Fancybox_css);

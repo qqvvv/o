@@ -5,7 +5,7 @@
  */
 import imagesBox_css from './imagesBox.css' with { type: "css" };
 import imagesLoaded from 'https://esm.sh/imagesloaded@5.0.0/es2022/imagesloaded.mjs';
-import { urlParse } from './urlParseE.js';
+import { urlParse } from './urlParse.js';
 
 /**
  * 创建图片加载器容器（顺序加载版本）
